@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Operasional CC Ciracas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b1221;
+  --bg2:#111827;
+  --bg3:#1a2235;
+  --card:#161f30;
+  --card2:#1e2a3d;
+  --border:rgba(255,255,255,0.08);
+  --border2:rgba(255,255,255,0.14);
+  --text:rgba(255,255,255,0.95);
+  --text2:rgba(255,255,255,0.62);
+  --text3:rgba(255,255,255,0.35);
+  --green:#34d399;
+  --green2:rgba(52,211,153,0.15);
+  --blue:#60a5fa;
+  --blue2:rgba(96,165,250,0.15);
+  --amber:#fbbf24;
+  --amber2:rgba(251,191,36,0.15);
+  --coral:#fb7185;
+  --coral2:rgba(251,113,133,0.15);
+  --violet:#a78bfa;
+  --violet2:rgba(167,139,250,0.15);
+  --cyan:#22d3ee;
+  --cyan2:rgba(34,211,238,0.15);
+  --r:14px;--r2:10px;
+  --shadow:0 4px 24px rgba(0,0,0,0.35);
+}
+body.light{
+  --bg:#f0f4f8;--bg2:#e8eef5;--bg3:#dde5ef;
+  --card:#ffffff;--card2:#f5f8fc;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --text:rgba(15,23,42,0.95);--text2:rgba(15,23,42,0.60);--text3:rgba(15,23,42,0.35);
+  --green:#059669;--green2:rgba(5,150,105,0.1);
+  --blue:#2563eb;--blue2:rgba(37,99,235,0.1);
+  --amber:#d97706;--amber2:rgba(217,119,6,0.1);
+  --coral:#e11d48;--coral2:rgba(225,29,72,0.1);
+  --violet:#7c3aed;--violet2:rgba(124,58,237,0.1);
+  --cyan:#0891b2;--cyan2:rgba(8,145,178,0.1);
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;transition:background .25s,color .25s}
+
+/* ─ HEADER ─ */
+.header{
+  background:var(--card);border-bottom:1px solid var(--border2);
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);
+}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 4px 12px rgba(99,102,241,0.4);flex-shrink:0;
+}
+.header-title{font-size:15px;font-weight:700;color:var(--text)}
+.header-sub{font-size:11.5px;color:var(--text3);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* filter pills */
+.filter-group{display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--border);border-radius:30px;padding:3px 5px}
+.filter-label{font-size:10.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:0 8px}
+.fpill{background:none;border:none;border-radius:22px;padding:5px 13px;font-size:12px;font-weight:500;font-family:inherit;color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap}
+.fpill:hover{color:var(--text);background:var(--card2)}
+.fpill.active{background:var(--card);color:var(--text);font-weight:600;box-shadow:var(--shadow)}
+
+.theme-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:22px;padding:7px 14px;font-size:12px;font-weight:600;font-family:inherit;
+  color:var(--text2);cursor:pointer;transition:all .2s;white-space:nowrap
+}
+.theme-btn:hover{border-color:var(--green);color:var(--green)}
+
+/* ─ DATE INPUTS ─ */
+.filter-group input[type="date"]{
+  background:var(--bg);border:1px solid var(--border2);border-radius:18px;
+  color:var(--text);font-size:12px;font-family:inherit;padding:5px 10px;
+  outline:none;cursor:pointer;color-scheme:dark;transition:all .18s;
+}
+body.light .filter-group input[type="date"]{color-scheme:light}
+.filter-group input[type="date"]:focus{border-color:var(--green)}
+.filter-group .sep{color:var(--text3);font-size:11px;padding:0 1px}
+
+/* ─ MATERIAL DROPDOWN ─ */
+.dd-wrap{position:relative}
+.dd-trigger{
+  display:flex;align-items:center;gap:6px;background:var(--bg);
+  border:1px solid var(--border2);border-radius:18px;color:var(--text2);
+  font-size:12px;font-family:inherit;font-weight:500;padding:5px 12px;
+  cursor:pointer;white-space:nowrap;transition:all .18s;min-width:120px;justify-content:space-between
+}
+.dd-trigger:hover{color:var(--text)}
+.dd-trigger.has-sel{color:var(--green);border-color:var(--green)}
+.dd-count{background:var(--green2);color:var(--green);font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;margin-left:2px}
+.dd-panel{
+  display:none;position:absolute;top:calc(100% + 6px);right:0;min-width:220px;max-width:280px;
+  background:var(--card);border:1px solid var(--border2);border-radius:var(--r2);
+  box-shadow:var(--shadow);z-index:200;overflow:hidden;
+}
+.dd-panel.open{display:block}
+.dd-search-wrap{padding:8px;border-bottom:1px solid var(--border)}
+.dd-search{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:inherit;padding:6px 9px;outline:none}
+.dd-search:focus{border-color:var(--green)}
+.dd-actions{display:flex;gap:6px;padding:6px 8px;border-bottom:1px solid var(--border)}
+.dd-act-btn{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:10.5px;font-weight:600;font-family:inherit;padding:5px 6px;cursor:pointer;transition:all .15s}
+.dd-act-btn:hover{color:var(--text);border-color:var(--green)}
+.dd-list{max-height:240px;overflow-y:auto;padding:4px}
+.dd-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--text2);transition:background .12s}
+.dd-item:hover{background:var(--bg2)}
+.dd-item input{accent-color:var(--green);cursor:pointer}
+.dd-item.checked{color:var(--text);font-weight:600}
+.dd-empty{padding:14px;text-align:center;color:var(--text3);font-size:11.5px}
+
+/* ─ TABS ─ */
+.tab-bar{display:flex;gap:2px;padding:16px 28px 0;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:66px;z-index:90}
+.tab{padding:10px 20px;border-radius:var(--r2) var(--r2) 0 0;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;border-bottom:none;transition:all .18s;color:var(--text2);background:none;font-family:inherit}
+.tab:hover{color:var(--text);background:var(--card)}
+.tab.active{color:var(--text);background:var(--card);border-color:var(--border2)}
+
+/* ─ MAIN ─ */
+.main{padding:22px 28px;max-width:1500px;margin:0 auto}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ─ KPI ROW ─ */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:16px 18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;
+}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.kpi-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.kpi-icon{font-size:18px;margin-bottom:8px}
+.kpi-val{font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.kpi-unit{font-size:12px;font-weight:400;color:var(--text2);margin-left:2px}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:6px}
+.kpi-foot{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ─ GRID ─ */
+.row{display:grid;gap:14px;margin-bottom:14px}
+.r2{grid-template-columns:1fr 1fr}
+.r3{grid-template-columns:1fr 1fr 1fr}
+.r4{grid-template-columns:1fr 1fr 1fr 1fr}
+.r21{grid-template-columns:2fr 1fr}
+.r12{grid-template-columns:1fr 2fr}
+@media(max-width:900px){.r2,.r3,.r4,.r21,.r12{grid-template-columns:1fr}}
+@media(min-width:901px) and (max-width:1200px){.r4{grid-template-columns:1fr 1fr}}
+
+/* ─ CARD ─ */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;position:relative;overflow:hidden}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px}
+.card-title{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.09em}
+.card-badge{font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;border:1px solid}
+.badge-green{background:var(--green2);color:var(--green);border-color:var(--green)}
+.badge-blue{background:var(--blue2);color:var(--blue);border-color:var(--blue)}
+.badge-amber{background:var(--amber2);color:var(--amber);border-color:var(--amber)}
+.badge-violet{background:var(--violet2);color:var(--violet);border-color:var(--violet)}
+
+/* ─ CHART WRAPPERS ─ */
+.chart-wrap{position:relative;width:100%;height:240px}
+.chart-wrap canvas{width:100%!important;height:100%!important}
+
+/* ─ TABLE ─ */
+.tbl-wrap{overflow-x:auto;max-height:320px;overflow-y:auto}
+.tbl-wrap::-webkit-scrollbar{width:4px;height:4px}
+.tbl-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{padding:8px 10px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;background:var(--bg2);position:sticky;top:0;border-bottom:1px solid var(--border2)}
+thead th.tr{text-align:right}
+tbody td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+tbody td.tr{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover td{background:var(--card2);color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+.num{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text)}
+.c-green{color:var(--green)}
+.c-blue{color:var(--blue)}
+.c-amber{color:var(--amber)}
+.c-coral{color:var(--coral)}
+.c-violet{color:var(--violet)}
+
+/* ─ PROGRESS BAR ─ */
+.prog-list{display:flex;flex-direction:column;gap:10px}
+.prog-item{}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.prog-name{font-size:12px;color:var(--text2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+.prog-val{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap}
+.prog-bar-bg{height:6px;background:var(--bg3);border-radius:6px;overflow:hidden}
+.prog-fill{height:100%;border-radius:6px;transition:width .6s ease}
+.target-summary{padding:10px 12px;border-radius:10px;background:var(--bg3);margin-bottom:12px;border:1px solid var(--border)}
+.target-summary .prog-name{font-size:11px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;max-width:none}
+.target-summary .prog-val{font-size:13px}
+.target-summary .prog-bar-bg{height:8px}
+.target-summary .prog-pct{font-size:10px;font-weight:600;opacity:.7;margin-top:4px;text-align:right}
+
+/* ─ LEGEND ─ */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text2)}
+.leg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.leg-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* ─ DONUT ─ */
+.donut-wrap{position:relative;height:220px}
+.donut-wrap canvas{width:100%!important;height:100%!important}
+.donut-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.donut-val{font-size:20px;font-weight:800;color:var(--text);line-height:1}
+.donut-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ─ HEATMAP ─ */
+.heatmap-wrap{overflow-x:auto}
+.heatmap{display:grid;gap:2px}
+.hm-cell{border-radius:3px;aspect-ratio:1;transition:opacity .15s;cursor:default;position:relative}
+.hm-cell:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100%+4px);left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:10.5px;color:var(--text);white-space:nowrap;z-index:10;pointer-events:none;box-shadow:var(--shadow)}
+.hm-labels{display:flex;gap:3px;margin-top:4px}
+.hm-label{font-size:9px;color:var(--text3);text-align:center}
+.hm-row-label{font-size:9px;color:var(--text3);display:flex;align-items:center;justify-content:flex-end;padding-right:4px;white-space:nowrap}
+
+/* ─ CONVEYOR COMPARE ─ */
+.conv-compare{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;margin-bottom:12px}
+.conv-side{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px 16px;text-align:center}
+.conv-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:6px}
+.conv-val{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.conv-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.conv-vs{font-size:18px;color:var(--text3);font-weight:700}
+
+/* ─ STAT PILLS ─ */
+.stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.stat-pill{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;flex:1;min-width:100px}
+.stat-pill-lbl{font-size:9.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.stat-pill-val{font-size:17px;font-weight:800;letter-spacing:-.02em}
+
+/* ─ OVERTIME BADGE ─ */
+.ot-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--amber2);color:var(--amber);border:1px solid var(--amber)}
+
+/* ─ EMPTY ─ */
+.empty{padding:24px;text-align:center;color:var(--text3);font-size:12.5px}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ═══════════════ RESPONSIVE ═══════════════ */
+
+/* Chart canvases must be allowed to shrink inside flex/grid parents */
+.chart-wrap canvas{max-width:100%}
+.donut-wrap{max-width:100%!important}
+
+/* ── Laptops / small desktops ── */
+@media (max-width:1200px){
+  .main{padding:18px 20px}
+  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+}
+
+/* ── Tablets (≤900px) ── */
+@media (max-width:900px){
+  .header{padding:12px 16px}
+  .header-title{font-size:14px}
+  .header-sub{font-size:10.5px}
+  .tab-bar{padding:12px 16px 0;top:58px;overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
+  .tab-bar::-webkit-scrollbar{display:none}
+  .tab{padding:9px 14px;font-size:12.5px;white-space:nowrap;flex-shrink:0}
+  .main{padding:16px}
+  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .kpi{padding:13px 14px}
+  .kpi-val{font-size:20px}
+  .conv-compare{grid-template-columns:1fr auto 1fr;gap:8px}
+  .conv-val{font-size:21px}
+  .donut-wrap{max-width:180px!important;height:180px;margin:0 auto}
+}
+
+/* ── Phones (≤640px) ── */
+@media (max-width:640px){
+  body{font-size:13px}
+  .header{flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px}
+  .header-left{justify-content:flex-start}
+  .header-right{justify-content:flex-start;width:100%}
+  .filter-group{flex-wrap:wrap;justify-content:flex-start;border-radius:14px}
+  .filter-label{padding:4px 6px 2px;width:100%}
+  .fpill{padding:5px 10px;font-size:11.5px}
+  .dd-trigger{min-width:0}
+  .theme-btn{margin-left:auto}
+
+  .tab-bar{top:0;position:sticky;gap:0}
+  .tab{padding:8px 12px;font-size:12px}
+
+  .main{padding:12px}
+  .kpi-row{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px}
+  .kpi{padding:12px}
+  .kpi-icon{font-size:16px;margin-bottom:6px}
+  .kpi-val{font-size:18px}
+  .kpi-unit{font-size:11px}
+  .kpi-lbl{font-size:9px}
+  .kpi-foot{font-size:10px}
+
+  .row{gap:10px;margin-bottom:10px}
+  .card{padding:14px}
+  .card-title{font-size:10px}
+  .card-head{margin-bottom:12px}
+
+  .chart-wrap{height:210px}
+  .donut-wrap{max-width:170px!important;height:170px}
+  .donut-val{font-size:17px}
+
+  .conv-compare{grid-template-columns:1fr;gap:8px;text-align:center}
+  .conv-vs{transform:rotate(90deg);margin:0 auto}
+  .conv-side{padding:12px}
+  .conv-val{font-size:19px}
+
+  .stat-row{gap:6px}
+  .stat-pill{min-width:80px;padding:8px 10px}
+  .stat-pill-val{font-size:14px}
+
+  table{font-size:11px}
+  thead th{padding:6px 7px;font-size:9px}
+  tbody td{padding:6px 7px}
+  .tbl-wrap{max-height:260px}
+
+  .prog-name{max-width:110px}
+
+  .dd-panel{position:fixed;left:12px;right:12px;min-width:0;max-width:none;top:auto}
+}
+
+/* ── Very small phones (≤380px) ── */
+@media (max-width:380px){
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .kpi-val{font-size:16px}
+  .header-title{font-size:13px}
+  .tab{padding:7px 10px;font-size:11px}
+}
+
+/* ── Large desktops / wide screens ── */
+@media (min-width:1700px){
+  .main{max-width:1800px}
+  body{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">⚙️</div>
+    <div>
+      <div class="header-title">CC Ciracas — Operasional</div>
+      <div class="header-sub">Sortasi · Remover · Produksi · Cacah &nbsp;|&nbsp; Jan – 22 Jun 2026</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="filter-group">
+      <span class="filter-label">Periode</span>
+      <button class="fpill active" onclick="setMonth('all',this)">Semua</button>
+      <button class="fpill" onclick="setMonth('Jan',this)">Jan</button>
+      <button class="fpill" onclick="setMonth('Feb',this)">Feb</button>
+      <button class="fpill" onclick="setMonth('Mar',this)">Mar</button>
+      <button class="fpill" onclick="setMonth('Apr',this)">Apr</button>
+      <button class="fpill" onclick="setMonth('May',this)">Mei</button>
+      <button class="fpill" onclick="setMonth('Jun',this)">Jun</button>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tanggal</span>
+      <input type="date" id="dateFrom" onchange="onDateChange()">
+      <span class="sep">–</span>
+      <input type="date" id="dateTo" onchange="onDateChange()">
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Material</span>
+      <div class="dd-wrap" id="dd-material">
+        <div class="dd-trigger" id="dd-material-trigger" onclick="toggleMaterialDd()">
+          <span id="dd-material-label">Semua material</span>
+          <span class="dd-count" id="dd-material-count" style="display:none"></span>
+        </div>
+        <div class="dd-panel" id="dd-material-panel">
+          <div class="dd-search-wrap"><input class="dd-search" placeholder="Cari material…" oninput="filterMaterialItems(this.value)"></div>
+          <div class="dd-actions">
+            <button class="dd-act-btn" onclick="selectAllMaterial()">Pilih semua</button>
+            <button class="dd-act-btn" onclick="clearMaterial()">Hapus semua</button>
+          </div>
+          <div class="dd-list" id="dd-material-list"></div>
+        </div>
+      </div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tab-bar">
+  <button class="tab active" onclick="showTab('overview',this)">📊 Overview</button>
+  <button class="tab" onclick="showTab('sortation',this)">🔀 Sortasi</button>
+  <button class="tab" onclick="showTab('remover',this)">🗑️ Remover</button>
+  <button class="tab" onclick="showTab('production',this)">⚙️ Produksi</button>
+  <button class="tab" onclick="showTab('cacah',this)">🔨 Cacah</button>
+</div>
+
+<div class="main">
+
+<!-- ══════════════════════════════ OVERVIEW ══════════════════════════════ -->
+<div class="tab-content active" id="tab-overview">
+
+  <div class="kpi-row" id="ov-kpis">
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#60a5fa)"></div><div class="kpi-icon">🔀</div><div><span class="kpi-val c-green" id="ov-sort-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Sortasi</div><div class="kpi-foot" id="ov-sort-days">— hari kerja</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#fb7185,#fbbf24)"></div><div class="kpi-icon">🗑️</div><div><span class="kpi-val c-coral" id="ov-rem-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Remover</div><div class="kpi-foot" id="ov-rem-days">— entri</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#a78bfa,#60a5fa)"></div><div class="kpi-icon">⚙️</div><div><span class="kpi-val c-violet" id="ov-prod-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Produksi</div><div class="kpi-foot" id="ov-prod-balls">— ball press</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#fbbf24,#fb7185)"></div><div class="kpi-icon">📦</div><div><span class="kpi-val c-amber" id="ov-sort-daily">—</span><span class="kpi-unit">kg/hr</span></div><div class="kpi-lbl">Rata-rata Sortasi/Hari</div><div class="kpi-foot">Conveyor 1 + 2</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#22d3ee,#6366f1)"></div><div class="kpi-icon">🏭</div><div><span class="kpi-val c-cyan" id="ov-prod-daily">—</span><span class="kpi-unit">kg/hr</span></div><div class="kpi-lbl">Rata-rata Produksi/Hari</div><div class="kpi-foot">Ball press</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#a78bfa)"></div><div class="kpi-icon">🔢</div><div><span class="kpi-val c-green" id="ov-prod-types">—</span><span class="kpi-unit">jenis</span></div><div class="kpi-lbl">Jenis Produksi Unik</div><div class="kpi-foot">Ball press material</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#f97316,#fbbf24)"></div><div class="kpi-icon">🔨</div><div><span class="kpi-val c-amber" id="ov-cacah-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Cacah</div><div class="kpi-foot" id="ov-cacah-days">— entri</div></div>
+  </div>
+
+  <div class="row r21">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📈 Volume Bulanan — Semua Aktivitas</span><span class="card-badge badge-green" id="ov-trend-badge">Tren</span></div>
+      <div class="legend" id="ov-trend-legend"></div>
+      <div class="chart-wrap"><canvas id="ov-trend-chart" height="200"></canvas></div>
+      <div style="font-size:11px;opacity:0.55;margin-top:6px;text-align:center">┄┄ garis putus-putus = target minimum bulanan (Sortasi 4 ton · Remover 1 ton · Produksi 1 ton · Cacah 1 ton)</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🥧 Distribusi Aktivitas</span></div>
+      <div class="donut-wrap" style="max-width:220px;margin:0 auto;position:relative">
+        <canvas id="ov-donut-chart" height="220"></canvas>
+        <div class="donut-center"><div class="donut-val" id="ov-donut-total">—</div><div class="donut-sub">Total kg</div></div>
+      </div>
+      <div class="legend" id="ov-donut-legend" style="justify-content:center;margin-top:12px;margin-bottom:0"></div>
+    </div>
+  </div>
+
+  <div class="row r4">
+    <div class="card">
+      <div class="card-head"><span class="card-title">🔀 Top 5 Item Sortasi</span></div>
+      <div class="target-summary" id="ov-sort-target"></div>
+      <div class="prog-list" id="ov-sort-top"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🗑️ Top 5 Label Remover</span></div>
+      <div class="target-summary" id="ov-rem-target"></div>
+      <div class="prog-list" id="ov-rem-top"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">⚙️ Top 5 Jenis Produksi</span></div>
+      <div class="target-summary" id="ov-prod-target"></div>
+      <div class="prog-list" id="ov-prod-top"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🔨 Top 5 Material Cacah</span></div>
+      <div class="target-summary" id="ov-cacah-target"></div>
+      <div class="prog-list" id="ov-cacah-top"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════ SORTATION ══════════════════════════════ -->
+<div class="tab-content" id="tab-sortation">
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#22d3ee)"></div><div class="kpi-icon">⚖️</div><div><span class="kpi-val c-green" id="s-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Tersortir</div><div class="kpi-foot" id="s-days">—</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#60a5fa,#6366f1)"></div><div class="kpi-icon">📦</div><div><span class="kpi-val c-blue" id="s-conv1">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Conveyor 1 (SAW)</div><div class="kpi-foot" id="s-c1-pct">—</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#a78bfa,#fb7185)"></div><div class="kpi-icon">📦</div><div><span class="kpi-val c-violet" id="s-conv2">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Conveyor 2 (SDT)</div><div class="kpi-foot" id="s-c2-pct">—</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#fbbf24,#fb7185)"></div><div class="kpi-icon">🌙</div><div><span class="kpi-val c-amber" id="s-ot">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Lembur (18.00–21.00)</div><div class="kpi-foot" id="s-ot-days">— hari lembur</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#22d3ee,#34d399)"></div><div class="kpi-icon">📅</div><div><span class="kpi-val c-cyan" id="s-avg">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Rata-rata/Hari</div><div class="kpi-foot">Gabungan conveyor</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#a78bfa)"></div><div class="kpi-icon">🏷️</div><div><span class="kpi-val c-green" id="s-items">—</span><span class="kpi-unit">item</span></div><div class="kpi-lbl">Jenis Item</div><div class="kpi-foot">Unique materials</div></div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Volume Harian — Conveyor 1 vs 2</span><span class="card-badge badge-blue">Per Hari</span></div>
+      <div class="chart-wrap"><canvas id="s-daily-chart" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📅 Volume Bulanan — Conveyor</span></div>
+      <div class="chart-wrap"><canvas id="s-monthly-chart" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row r21">
+    <div class="card">
+      <div class="card-head"><span class="card-title">🏷️ Komposisi Item Tersortir</span><span class="card-badge badge-green">kg per item</span></div>
+      <div class="chart-wrap"><canvas id="s-item-chart" height="200"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">⚖️ SAW vs SDT Split</span></div>
+      <div class="donut-wrap" style="max-width:200px;margin:0 auto;position:relative">
+        <canvas id="s-type-chart" height="200"></canvas>
+        <div class="donut-center"><div class="donut-val" id="s-donut-val">—</div><div class="donut-sub">Total kg</div></div>
+      </div>
+      <div class="legend" id="s-type-legend" style="justify-content:center;margin-top:10px;margin-bottom:0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="card-title">📋 Detail Harian Sortasi</span><span class="card-badge badge-blue" id="s-tbl-count">—</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Tanggal</th><th>Shift</th><th>Conveyor</th><th>Tipe</th><th>Item</th><th class="tr">Total (kg)</th></tr></thead>
+        <tbody id="s-tbl"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════ REMOVER ══════════════════════════════ -->
+<div class="tab-content" id="tab-remover">
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#fb7185,#fbbf24)"></div><div class="kpi-icon">⚖️</div><div><span class="kpi-val c-coral" id="r-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Diremove</div><div class="kpi-foot" id="r-entries">— entri</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#fbbf24,#fb7185)"></div><div class="kpi-icon">📅</div><div><span class="kpi-val c-amber" id="r-avg">—</span><span class="kpi-unit">kg/hr</span></div><div class="kpi-lbl">Rata-rata/Hari Aktif</div><div class="kpi-foot" id="r-days">— hari aktif</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#60a5fa,#22d3ee)"></div><div class="kpi-icon">🏷️</div><div><span class="kpi-val c-blue" id="r-labels">—</span><span class="kpi-unit">label</span></div><div class="kpi-lbl">Jenis Label</div><div class="kpi-foot">Unique labels</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#a78bfa,#6366f1)"></div><div class="kpi-icon">🏆</div><div class="kpi-val c-violet" id="r-top-label" style="font-size:14px;font-weight:700;line-height:1.3;margin-top:2px">—</div><div class="kpi-lbl">Label Terbanyak</div><div class="kpi-foot" id="r-top-kg">— kg</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#60a5fa)"></div><div class="kpi-icon">📈</div><div><span class="kpi-val c-green" id="r-peak-day">—</span></div><div class="kpi-lbl">Hari Terbanyak</div><div class="kpi-foot" id="r-peak-kg">— kg</div></div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Volume Remover per Bulan</span></div>
+      <div class="chart-wrap"><canvas id="r-monthly-chart" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🥧 Komposisi Label Remover</span></div>
+      <div class="donut-wrap" style="max-width:210px;margin:0 auto;position:relative">
+        <canvas id="r-donut-chart" height="210"></canvas>
+        <div class="donut-center"><div class="donut-val" id="r-donut-val">—</div><div class="donut-sub">Total kg</div></div>
+      </div>
+      <div class="legend" id="r-donut-legend" style="justify-content:center;margin-top:10px;margin-bottom:0"></div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Top Label — Volume (kg)</span></div>
+      <div class="prog-list" id="r-label-prog"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📋 Riwayat Remover</span><span class="card-badge badge-amber" id="r-tbl-count">—</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Tanggal</th><th>Label</th><th class="tr">kg</th></tr></thead>
+          <tbody id="r-tbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════ PRODUCTION ══════════════════════════════ -->
+<div class="tab-content" id="tab-production">
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#a78bfa,#60a5fa)"></div><div class="kpi-icon">⚙️</div><div><span class="kpi-val c-violet" id="p-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Produksi</div><div class="kpi-foot" id="p-balls">— ball press</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#60a5fa,#22d3ee)"></div><div class="kpi-icon">📅</div><div><span class="kpi-val c-blue" id="p-avg">—</span><span class="kpi-unit">kg/hr</span></div><div class="kpi-lbl">Rata-rata/Hari</div><div class="kpi-foot" id="p-days">— hari aktif</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#22d3ee)"></div><div class="kpi-icon">📦</div><div><span class="kpi-val c-green" id="p-avg-ball">—</span><span class="kpi-unit">kg/ball</span></div><div class="kpi-lbl">Rata-rata per Ball</div><div class="kpi-foot">Berat rata-rata 1 ball</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#fbbf24,#fb7185)"></div><div class="kpi-icon">🏆</div><div class="kpi-val c-amber" id="p-top-type" style="font-size:14px;font-weight:700;line-height:1.3;margin-top:2px">—</div><div class="kpi-lbl">Jenis Terbanyak</div><div class="kpi-foot" id="p-top-kg">— kg</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#22d3ee,#6366f1)"></div><div class="kpi-icon">📈</div><div><span class="kpi-val c-cyan" id="p-peak-day">—</span></div><div class="kpi-lbl">Hari Terbanyak</div><div class="kpi-foot" id="p-peak-kg">— kg</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#a78bfa)"></div><div class="kpi-icon">🔢</div><div><span class="kpi-val c-green" id="p-types">—</span><span class="kpi-unit">jenis</span></div><div class="kpi-lbl">Jenis Material</div><div class="kpi-foot">Unique production types</div></div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Volume Produksi per Bulan</span></div>
+      <div class="chart-wrap"><canvas id="p-monthly-chart" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📦 Ball Press per Bulan</span></div>
+      <div class="chart-wrap"><canvas id="p-balls-chart" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <div class="row r21">
+    <div class="card">
+      <div class="card-head"><span class="card-title">🏷️ Produksi per Jenis Material</span><span class="card-badge badge-violet">Horizontal Bar</span></div>
+      <div class="chart-wrap"><canvas id="p-type-chart" height="320"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🥧 Share Jenis Material</span></div>
+      <div class="donut-wrap" style="max-width:200px;margin:0 auto;position:relative">
+        <canvas id="p-donut-chart" height="200"></canvas>
+        <div class="donut-center"><div class="donut-val" id="p-donut-val">—</div><div class="donut-sub">Total kg</div></div>
+      </div>
+      <div class="legend" id="p-donut-legend" style="justify-content:center;margin-top:10px;margin-bottom:0"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><span class="card-title">📋 Log Produksi</span><span class="card-badge badge-violet" id="p-tbl-count">—</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Tanggal</th><th>Material</th><th class="tr">Qty (ball)</th><th class="tr">Berat (kg)</th></tr></thead>
+        <tbody id="p-tbl"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════ CACAH ══════════════════════════════ -->
+<div class="tab-content" id="tab-cacah">
+
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#f97316,#fbbf24)"></div><div class="kpi-icon">🔨</div><div><span class="kpi-val c-amber" id="cc-total">—</span><span class="kpi-unit">kg</span></div><div class="kpi-lbl">Total Cacah</div><div class="kpi-foot" id="cc-entries">— entri</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#fbbf24,#f97316)"></div><div class="kpi-icon">📅</div><div><span class="kpi-val c-amber" id="cc-avg">—</span><span class="kpi-unit">kg/hr</span></div><div class="kpi-lbl">Rata-rata/Hari Aktif</div><div class="kpi-foot" id="cc-days">— hari aktif</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#60a5fa,#22d3ee)"></div><div class="kpi-icon">🏷️</div><div><span class="kpi-val c-blue" id="cc-types">—</span><span class="kpi-unit">jenis</span></div><div class="kpi-lbl">Jenis Material</div><div class="kpi-foot">Unique materials</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#a78bfa,#6366f1)"></div><div class="kpi-icon">🏆</div><div class="kpi-val c-violet" id="cc-top-type" style="font-size:14px;font-weight:700;line-height:1.3;margin-top:2px">—</div><div class="kpi-lbl">Jenis Terbanyak</div><div class="kpi-foot" id="cc-top-kg">— kg</div></div>
+    <div class="kpi"><div class="kpi-accent" style="background:linear-gradient(90deg,#34d399,#60a5fa)"></div><div class="kpi-icon">📈</div><div><span class="kpi-val c-green" id="cc-peak-day">—</span></div><div class="kpi-lbl">Hari Terbanyak</div><div class="kpi-foot" id="cc-peak-kg">— kg</div></div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Volume Cacah per Bulan</span></div>
+      <div class="chart-wrap"><canvas id="cc-monthly-chart" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">🥧 Komposisi Material Cacah</span></div>
+      <div class="donut-wrap" style="max-width:210px;margin:0 auto;position:relative">
+        <canvas id="cc-donut-chart" height="210"></canvas>
+        <div class="donut-center"><div class="donut-val" id="cc-donut-val">—</div><div class="donut-sub">Total kg</div></div>
+      </div>
+      <div class="legend" id="cc-donut-legend" style="justify-content:center;margin-top:10px;margin-bottom:0"></div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="card">
+      <div class="card-head"><span class="card-title">📊 Top Material — Volume (kg)</span></div>
+      <div class="prog-list" id="cc-type-prog"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">📋 Riwayat Cacah</span><span class="card-badge badge-amber" id="cc-tbl-count">—</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Tanggal</th><th>Material</th><th class="tr">kg</th></tr></thead>
+          <tbody id="cc-tbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.main -->
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+const RAW_SORT = [["26-Jan-2026","Normal","Conveyor 1","SAW (Jenis)","",678.5],["26-Jan-2026","Normal","Conveyor 2","SDT (Detail)","",322.5],["27-Jan-2026","Normal","Conveyor 1","SAW (Jenis)","",708.0],["27-Jan-2026","Normal","Conveyor 2","SDT (Detail)","",611.0],["28-Jan-2026","Normal","Conveyor 1","SAW (Jenis)","",620.5],["28-Jan-2026","Normal","Conveyor 2","SDT (Detail)","",735.5],["29-Jan-2026","Normal","Conveyor 1","SAW (Jenis)","",348.5],["29-Jan-2026","Normal","Conveyor 2","SDT (Detail)","",709.5],["30-Jan-2026","Normal","Conveyor 1","SAW (Jenis)","",1041.5],["30-Jan-2026","Normal","Conveyor 2","SDT (Detail)","",281.0],["31-Jan-2026","Normal","Conveyor 1","SAW (Jenis)","",477.5],["31-Jan-2026","Normal","Conveyor 2","SDT (Detail)","",157.0],["1-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",177.0],["1-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",142.5],["2-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1054.5],["2-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",578.0],["3-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1197.5],["3-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",687.5],["4-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",813.0],["4-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",982.5],["5-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",509.5],["5-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",1084.0],["6-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",595.0],["6-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",129.5],["7-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1100.0],["7-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",651.0],["9-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",983.0],["9-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",224.5],["10-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",536.0],["10-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",535.0],["11-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1402.0],["11-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",502.5],["12-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1245.0],["12-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",450.0],["13-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",129.5],["13-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",1100.0],["14-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1080.0],["14-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",450.0],["16-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",535.0],["16-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",1402.0],["17-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1100.0],["17-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",670.0],["18-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",890.0],["18-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",670.0],["20-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",735.0],["20-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",678.0],["21-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",978.0],["21-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",677.0],["23-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",456.0],["23-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",990.0],["24-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1402.0],["24-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",502.5],["25-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",1496.5],["25-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",0.0],["27-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["27-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",623.5],["28-Feb-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["28-Feb-2026","Normal","Conveyor 2","SDT (Detail)","",886.0],["2-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",369.0],["2-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",754.5],["3-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",804.5],["3-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",263.5],["4-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",1777.0],["4-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",0.0],["5-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["5-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",715.0],["6-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["6-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",681.5],["7-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",1644.0],["7-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",20.5],["9-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["9-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",894.5],["10-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["10-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",899.0],["11-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",2040.0],["11-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",0.0],["12-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["12-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",1114.0],["13-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",564.5],["13-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",374.0],["14-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",170.0],["14-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",696.5],["16-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",1253.5],["16-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",106.5],["17-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",419.5],["17-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",394.0],["18-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",618.5],["18-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",0.0],["25-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",732.0],["25-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",558.5],["26-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",0.0],["26-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",0.0],["27-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",1557.5],["27-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",0.0],["28-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",1601.0],["28-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",427.0],["30-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","",113.0],["30-Mar-2026","Normal","Conveyor 2","SDT (Detail)","",1172.0],["31-Mar-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",654.5],["31-Mar-2026","Normal","Conveyor 2","SDT (Detail)","PET Mix Bersih",499.5],["31-Mar-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",259.5],["31-Mar-2026","Normal","Conveyor 2","SDT (Detail)","PK",99.5],["1-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1224.5],["1-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk SPP",47.5],["1-Apr-2026","Normal","Conveyor 1","SDT (Detail)","PK",82.0],["1-Apr-2026","Normal","Conveyor 2","SDT (Detail)","MS",97.5],["1-Apr-2026","Normal","Conveyor 2","SDT (Detail)","PET Mix Bersih",205.0],["2-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",40.0],["2-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",573.0],["2-Apr-2026","Normal","Conveyor 2","SDT (Detail)","PK",189.5],["2-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",94.0],["2-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Emberan",107.0],["2-Apr-2026","Normal","Conveyor 2","SDT (Detail)","BLPK Kotor",183.0],["4-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",117.0],["4-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",952.5],["4-Apr-2026","Normal","Conveyor 2","SDT (Detail)","PK",88.0],["6-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",43.0],["6-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",907.0],["6-Apr-2026","Normal","Conveyor 2","SDT (Detail)","PK",254.5],["6-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Mix Bersih",191.0],["6-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",105.0],["6-Apr-2026","Normal","Conveyor 2","SDT (Detail)","BLPK Kotor",73.0],["7-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",92.0],["7-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1766.5],["7-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Emberan",192.0],["7-Apr-2026","Normal","Conveyor 2","SDT (Detail)","PK",153.0],["8-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",58.0],["8-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",797.5],["8-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Emberan",111.0],["8-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",366.0],["8-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",65.5],["8-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",510.5],["8-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",64.0],["9-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",54.0],["9-Apr-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",867.5],["9-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",570.0],["10-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",92.0],["10-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",615.0],["10-Apr-2026","Normal","Conveyor 2","SDT (Detail)","PK",292.0],["10-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",268.0],["11-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk Sapuan (SPP)",68.0],["11-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",603.0],["11-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Mix Bersih",171.5],["11-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM W Tutup",284.0],["13-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk Sapuan (SPP)",78.0],["13-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1020.0],["13-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM Kotor",122.5],["13-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BN Kotor",695.0],["14-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",37.0],["14-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",701.5],["14-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BN Kotor",328.0],["14-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",311.0],["15-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",66.0],["15-Apr-2026","Normal","Conveyor 1","SDT (Detail)","PK",372.0],["15-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",759.0],["16-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",37.0],["16-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",755.0],["16-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",997.0],["17-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",49.0],["17-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",731.5],["17-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",344.0],["17-Apr-2026","Normal","Conveyor 2","SDT (Detail)","PK",249.0],["17-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM Kotor",145.0],["20-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",133.5],["20-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",461.0],["20-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",643.0],["20-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Mix Kotor",124.0],["21-Apr-2026","Normal","Conveyor 1","SDT (Detail)","Bodong BN Kotor",211.0],["21-Apr-2026","Normal","Conveyor 1","SDT (Detail)","Bodong BM Warna Kotor",210.0],["21-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",865.0],["22-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",72.0],["22-Apr-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",228.5],["22-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",222.5],["22-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM Warna Kotor",198.5],["22-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BN Kotor",317.5],["23-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",782.0],["23-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM Warna Kotor",135.0],["23-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",492.5],["23-Apr-2026","Lembur","Conveyor 1","SAW (Jenis)","Emberan",279.0],["23-Apr-2026","Lembur","Conveyor 2","SAW (Jenis)","PK",165.0],["24-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",42.0],["24-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",669.5],["24-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1079.5],["25-Apr-2026","Normal","Conveyor 1","SDT (Detail)","PK",282.0],["25-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",161.0],["25-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Emberan",572.5],["27-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",197.0],["27-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",961.5],["27-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM Warna Kotor",361.5],["28-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",858.5],["29-Apr-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1119.5],["29-Apr-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1233.0],["30-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Emberan",285.0],["30-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM Warna Kotor",255.5],["30-Apr-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BN Kotor",188.0],["1-May-2026","Normal","Conveyor 2","SAW (Jenis)","Bodong Mix Kotor",279.0],["1-May-2026","Normal","Conveyor 2","SAW (Jenis)","Bodong BM Warna Kotor",26.5],["1-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",382.0],["2-May-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",115.0],["2-May-2026","Normal","Conveyor 2","SDT (Detail)","PK",353.5],["2-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",979.0],["2-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Mix Kotor",464.0],["4-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",621.5],["4-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",27.0],["4-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1359.0],["5-May-2026","Normal","Conveyor 1","SDT (Detail)","PK",416.0],["5-May-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Mix Kotor",309.5],["6-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",589.5],["6-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",390.5],["6-May-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",113.0],["6-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",229.0],["7-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1003.0],["7-May-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",83.5],["7-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BN Kotor",84.5],["7-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BM Kotor",237.6],["7-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Mix Kotor",43.0],["7-May-2026","Normal","Conveyor 2","SDT (Detail)","PK",123.0],["8-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1434.5],["8-May-2026","Normal","Conveyor 2","SDT (Detail)","PK",290.5],["8-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Mix Kotor",336.5],["9-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",933.0],["9-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",639.5],["11-May-2026","Normal","Conveyor 2","SDT (Detail)","PK",175.5],["11-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",475.0],["11-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",901.0],["12-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",1195.0],["12-May-2026","Normal","Conveyor 2","SDT (Detail)","PK",307.5],["12-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",331.0],["13-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk SPP",147.5],["13-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",292.5],["13-May-2026","Normal","Conveyor 1","SDT (Detail)","PK",397.5],["13-May-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",381.0],["13-May-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",170.0],["15-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1109.0],["15-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",812.5],["15-May-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",494.0],["16-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1238.0],["16-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",947.0],["18-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",932.0],["18-May-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",334.5],["18-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1046.0],["19-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1514.0],["19-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",404.0],["20-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1287.0],["20-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1298.0],["21-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1611.0],["21-May-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",557.0],["21-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",342.5],["22-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1465.5],["22-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",925.5],["22-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",294.0],["23-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1753.5],["23-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",854.5],["25-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1836.0],["25-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",685.5],["25-May-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",656.0],["25-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",891.0],["26-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",2038.0],["26-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",696.0],["26-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1220.5],["28-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",873.5],["28-May-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",507.0],["28-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",629.0],["29-May-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Tutup",299.0],["29-May-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",154.5],["29-May-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",180.0],["29-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",177.5],["30-May-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",876.0],["30-May-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",164.5],["30-May-2026","Normal","Conveyor 2","SDT (Detail)","Bodong BN Kotor",316.5],["31-May-2026","Normal","Conveyor 1","","",0.0],["31-May-2026","Normal","Conveyor 2","","",0.0],["1-Jun-2026","Normal","Conveyor 1","","",0.0],["1-Jun-2026","Normal","Conveyor 2","","",0.0],["2-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",267.0],["2-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",296.0],["2-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",241.0],["2-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",496.5],["3-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1865.5],["3-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",2317.0],["3-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",73.0],["4-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",303.0],["4-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1026.5],["4-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",119.0],["4-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1048.5],["5-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",884.0],["5-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Bodong Kotor",176.5],["5-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Gabruk",340.5],["6-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",213.5],["6-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",113.0],["6-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",187.0],["6-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",267.5],["8-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",126.5],["8-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1136.5],["8-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",393.0],["9-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1637.0],["9-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",142.5],["9-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",43.0],["9-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",332.0],["9-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",252.0],["10-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",861.5],["10-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",153.0],["10-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",263.5],["10-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",396.5],["11-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",347.0],["11-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",653.0],["11-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Warna Kotor",210.0],["11-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1156.0],["11-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",172.0],["11-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",74.0],["12-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",405.0],["12-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",92.0],["12-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",1611.0],["12-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",181.0],["13-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",325.0],["13-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",649.5],["13-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Kotor",145.0],["15-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1023.5],["15-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Kotor",261.0],["15-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",105.0],["15-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",624.0],["15-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",52.0],["17-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",1750.0],["17-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Tutup",203.5],["17-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",146.5],["17-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",174.0],["17-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",797.0],["18-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",237.0],["18-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Bodong Tutup",207.5],["18-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",813.0],["18-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",905.0],["18-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",86.0],["19-Jun-2026","Normal","Conveyor 1","SAW (Jenis)","Gabruk",2190.0],["20-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",632.0],["20-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",300.5],["20-Jun-2026","Normal","Conveyor 2","SAW (Jenis)","Gabruk",608.0],["22-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Mainan",81.0],["22-Jun-2026","Normal","Conveyor 1","SDT (Detail)","Cacah PP BN",41.5],["22-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Bodong Tutup",76.5],["22-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Mainan",178.0],["22-Jun-2026","Normal","Conveyor 2","SDT (Detail)","Gabruk",829.0]];
+
+const RAW_REM = [["3-Feb-2026","PET Mix Kotor",122.0],["5-Feb-2026","PET Mix Kotor",385.0],["6-Feb-2026","PET Mix Kotor",73.0],["11-Feb-2026","PET Mix Kotor",172.5],["28-Feb-2026","PET Mix Kotor",211.0],["3-Mar-2026","PET Mix Kotor",161.5],["4-Mar-2026","PET Mix Kotor",81.0],["5-Mar-2026","PET Mix Kotor",117.5],["6-Mar-2026","PET Mix Kotor",321.0],["9-Mar-2026","PET Mix Kotor",288.5],["10-Mar-2026","PET Mix Kotor",45.0],["11-Mar-2026","PET Mix Kotor",267.5],["12-Mar-2026","Bodong Kotor",250.0],["13-Mar-2026","PET Mix Kotor",0.0],["14-Mar-2026","PET Mix Kotor",0.0],["16-Mar-2026","PET Mix Kotor",0.0],["17-Mar-2026","PET Mix Kotor",196.0],["18-Mar-2026","PET Mix Kotor",148.0],["25-Mar-2026","PET Mix Kotor",71.5],["28-Mar-2026","Bodong Kotor",625.5],["9-Apr-2026","Bodong BM Kotor",12.0],["10-Apr-2026","Bodong Kotor",20.0],["11-Apr-2026","Bodong BM Kotor",266.0],["12-Apr-2026","Bodong BN Kotor",928.0],["13-Apr-2026","Bodong BN Kotor",232.0],["17-Apr-2026","Bodong BM Kotor",266.0],["21-Apr-2026","Bodong BN Kotor",565.5],["21-Apr-2026","Bodong BM Warna Kotor",336.0],["22-Apr-2026","Bodong BM Warna Kotor",241.0],["22-Apr-2026","Bodong BN Kotor",193.5],["22-Apr-2026","PET Mix Kotor",27.0],["25-Apr-2026","Bodong Kotor",217.0],["27-Apr-2026","Bodong BN Kotor",62.0],["27-Apr-2026","Bodong Kotor",135.5],["27-Apr-2026","Bodong BM Warna Kotor",166.0],["28-Apr-2026","Bodong BN Kotor",155.5],["29-Apr-2026","Bodong BN Kotor",83.0],["29-Apr-2026","Bodong BM Kotor",57.0],["30-Apr-2026","Bodong BN Kotor",168.5],["30-Apr-2026","Bodong BM Warna Kotor",185.5],["30-Apr-2026","Bodong Kotor",117.0],["2-May-2026","Bodong BM Kotor",310.0],["2-May-2026","Bodong BN Kotor",114.0],["2-May-2026","Bodong Kotor",46.5],["4-May-2026","Bodong BN Tutup",84.0],["4-May-2026","Bodong BM Campur Tutup",111.0],["5-May-2026","Bodong BN Kotor",39.5],["5-May-2026","Bodong BM Kotor",134.0],["5-May-2026","Bodong Kotor",86.0],["7-May-2026","Bodong BN Kotor",236.5],["7-May-2026","Bodong BM Kotor",167.0],["7-May-2026","Bodong BN Kotor",101.0],["7-May-2026","Bodong BM Kotor",163.0],["7-May-2026","PET Mix Kotor",16.5],["7-May-2026","Bodong Warna Kotor",116.0],["8-May-2026","Bodong BN Kotor",282.0],["8-May-2026","Bodong BM Kotor",350.0],["8-May-2026","Bodong BM Campur Tutup",163.5],["11-May-2026","Bodong BN Kotor",113.5],["11-May-2026","Bodong BM Kotor",136.0],["11-May-2026","Bodong BM Campur Kotor",116.0],["11-May-2026","Bodong BN Kotor",78.5],["11-May-2026","Bodong BM Kotor",93.5],["11-May-2026","Bodong BM Campur Kotor",136.5],["12-May-2026","Bodong BM Campur Kotor",307.5],["20-May-2026","Bodong MIX Kotor",126.0],["20-May-2026","Bodong BM Kotor",28.0],["20-May-2026","Bodong Warna Kotor",28.0],["20-May-2026","Bodong MIX Kotor",157.5],["20-May-2026","Bodong BM Kotor",168.0],["21-May-2026","Bodong BM Campur Kotor",124.5],["21-May-2026","Bodong BM Campur Kotor",599.0],["22-May-2026","Bodong MIX Kotor",341.0],["22-May-2026","Bodong MIX Kotor",443.5],["23-May-2026","Bodong Kotor",544.0],["25-May-2026","Bodong Kotor",816.5],["26-May-2026","Bodong Kotor",501.0],["28-May-2026","Bodong Kotor",71.5],["12-Jun-2026","Bodong Kotor",191.5],["13-Jun-2026","Bodong Kotor",584.5],["15-Jun-2026","Bodong MIX Kotor",341.5],["17-Jun-2026","Bodong Kotor",665.5],["18-Jun-2026","Bodong Kotor",333.5],["19-Jun-2026","Bodong Kotor",464.0],["20-Jun-2026","Bodong Kotor",583.0],["22-Jun-2026","Bodong Kotor",380.5]];
+
+const RAW_PROD = [["19-Dec-2025","PET Mix",1,131.0],["19-Dec-2025","PET Mix",1,111.0],["27-Dec-2025","PET Mix",1,80.5],["27-Dec-2025","PET BN",1,80.5],["9-Jan-2026","PET Mix",1,110.5],["9-Jan-2026","PET Mix",1,136.0],["9-Jan-2026","Galon Le",1,136.0],["12-Jan-2026","PET Mix",1,133.5],["14-Jan-2026","PET Mix",1,144.0],["17-Jan-2026","PET Mix",1,131.0],["17-Jan-2026","PET BN",1,140.0],["20-Jan-2026","PET Mix",1,129.5],["20-Jan-2026","PET BN",1,158.0],["20-Jan-2026","Naso",1,92.0],["21-Jan-2026","PET Mix",1,152.0],["21-Jan-2026","PET Mix",1,111.0],["23-Jan-2026","PET Mix",1,130.0],["23-Jan-2026","PET Mix",1,120.0],["23-Jan-2026","PET Mix",1,116.0],["23-Jan-2026","PET Mix",1,112.5],["23-Jan-2026","PET Mix",1,129.5],["23-Jan-2026","Naso",1,116.0],["23-Jan-2026","AG Kotor",1,85.0],["25-Jan-2026","AG Bersih",1,115.0],["26-Jan-2026","Galon Le",1,113.0],["26-Jan-2026","Galon Le",1,138.0],["26-Jan-2026","PET Mix",1,139.5],["26-Jan-2026","PP Merah",1,61.0],["26-Jan-2026","PP Abu",1,121.0],["26-Jan-2026","Falkon",1,93.5],["27-Jan-2026","PET Mix",1,138.0],["27-Jan-2026","PET Mix",1,115.5],["27-Jan-2026","Naso",1,80.0],["28-Jan-2026","PET Mix",1,123.5],["28-Jan-2026","AG Bersih",1,85.0],["28-Jan-2026","AG Kotor",1,74.5],["28-Jan-2026","Galon Le",1,113.5],["29-Jan-2026","PET Mix",1,131.5],["29-Jan-2026","PET Mix",1,132.5],["29-Jan-2026","PET Mix",1,150.0],["29-Jan-2026","Galon Le",1,108.0],["30-Jan-2026","PP Merah",1,118.5],["30-Jan-2026","AG Kotor",1,76.5],["1-Feb-2026","PET Mix",1,134.0],["1-Feb-2026","PET Mix",1,142.0],["1-Feb-2026","AG Kotor",1,79.5],["3-Feb-2026","Galon Le",1,135.0],["3-Feb-2026","PET Mix",1,137.5],["4-Feb-2026","AG Kotor",1,84.5],["5-Feb-2026","PET Mix",1,122.0],["5-Feb-2026","PET Mix",1,114.0],["5-Feb-2026","PET Mix",1,112.0],["5-Feb-2026","Galon Le",1,65.5],["6-Feb-2026","Sprite",1,91.5],["6-Feb-2026","Naso",1,144.0],["6-Feb-2026","PET Mix",1,125.5],["6-Feb-2026","PET Mix",1,126.5],["7-Feb-2026","Milku",1,73.0],["7-Feb-2026","Mountea",1,89.0],["7-Feb-2026","AG Bersih",1,74.0],["7-Feb-2026","Galon Le",1,134.5],["7-Feb-2026","AG Kotor",1,114.0],["11-Feb-2026","PET Mix",1,126.5],["11-Feb-2026","PET Mix",1,148.5],["25-Feb-2026","AG Kotor",1,120.0],["25-Feb-2026","AG Kotor",1,58.0],["25-Feb-2026","Mountea",1,70.0],["25-Feb-2026","Falkon",1,44.0],["25-Feb-2026","Sprite",1,58.0],["27-Feb-2026","AG Bersih",1,61.0],["27-Feb-2026","PET Mix",1,157.5],["28-Feb-2026","PET Mix",1,141.0],["28-Feb-2026","PET Mix",1,145.0],["28-Feb-2026","Galon Le",1,123.5],["2-Mar-2026","PET Mix",1,131.0],["2-Mar-2026","PP Warna",1,132.0],["2-Mar-2026","PP Warna",1,128.5],["2-Mar-2026","PP Warna",1,139.5],["2-Mar-2026","AG Kotor",1,90.5],["2-Mar-2026","PP Warna",1,102.5],["3-Mar-2026","PET Mix",1,137.5],["3-Mar-2026","Oli Warna",1,94.5],["4-Mar-2026","Mountea",1,35.5],["4-Mar-2026","Galon Le",1,48.5],["4-Mar-2026","PP Warna",1,16.0],["4-Mar-2026","AG Kotor",1,79.0],["4-Mar-2026","Milku",1,61.0],["5-Mar-2026","PET Mix",1,73.0],["5-Mar-2026","PET Mix",1,147.5],["5-Mar-2026","Oli Warna",1,18.5],["5-Mar-2026","Oli Hitam",1,13.5],["5-Mar-2026","Facial Wash",1,60.0],["5-Mar-2026","Mainan",1,110.0],["5-Mar-2026","Mainan",1,104.0],["6-Mar-2026","PP BN",1,38.0],["6-Mar-2026","AG Kotor",1,117.0],["6-Mar-2026","PP Warna",1,83.0],["6-Mar-2026","PET Mix",1,138.5],["6-Mar-2026","AG Bersih",1,33.5],["6-Mar-2026","PP Warna",1,102.0],["7-Mar-2026","PP Hitam",1,38.0],["7-Mar-2026","Galon Le",1,48.5],["7-Mar-2026","PP BN",1,45.5],["7-Mar-2026","Mountea",1,21.5],["7-Mar-2026","Falkon",1,137.0],["9-Mar-2026","BL Warna",1,87.0],["9-Mar-2026","BLPK",1,49.0],["9-Mar-2026","Sprite",1,37.0],["9-Mar-2026","Naso",1,60.5],["9-Mar-2026","BLPK",1,67.0],["9-Mar-2026","PP BN",1,54.0],["9-Mar-2026","PP BN Sablon",1,74.0],["9-Mar-2026","AG Kotor",1,62.0],["9-Mar-2026","PP Warna",1,64.0],["10-Mar-2026","Milku",1,44.5],["10-Mar-2026","AG Kotor",1,34.5],["10-Mar-2026","Oli Warna",1,85.5],["10-Mar-2026","BL Warna",1,114.0],["10-Mar-2026","PET BN",1,136.0],["10-Mar-2026","BLPK",1,152.0],["10-Mar-2026","BLPK",1,106.0],["11-Mar-2026","Falkon",1,46.5],["11-Mar-2026","Naso",1,47.5],["11-Mar-2026","PP Warna",1,116.0],["11-Mar-2026","Facial Wash",1,43.0],["11-Mar-2026","Mountea",1,8.5],["12-Mar-2026","Galon Le",1,63.5],["12-Mar-2026","PET BM",1,133.0],["12-Mar-2026","PP Warna",1,120.0],["12-Mar-2026","PET BN",1,160.0],["12-Mar-2026","PP Warna",1,140.0],["13-Mar-2026","PP Hitam",1,53.0],["13-Mar-2026","PP BN",1,55.0],["13-Mar-2026","Naso",1,35.5],["13-Mar-2026","Galon Le",1,22.5],["13-Mar-2026","PP BN",1,34.0],["13-Mar-2026","PET BN",1,132.0],["13-Mar-2026","PET BM",1,129.0],["13-Mar-2026","AG Kotor",1,105.0],["14-Mar-2026","AG Bersih",1,30.0],["14-Mar-2026","Oli Hitam",1,25.5],["14-Mar-2026","Falkon",1,54.0],["14-Mar-2026","Oli Warna",1,14.0],["14-Mar-2026","PP PK",1,41.0],["14-Mar-2026","PP Warna",1,84.5],["14-Mar-2026","PET BN",1,142.0],["16-Mar-2026","PP BN",1,23.0],["16-Mar-2026","PET BM",1,107.5],["16-Mar-2026","PET BN",1,137.0],["16-Mar-2026","Oli Hitam",1,5.5],["16-Mar-2026","AG Bersih",1,30.0],["16-Mar-2026","Mountea",1,12.0],["16-Mar-2026","AG Kotor",1,17.0],["17-Mar-2026","Milku",1,35.0],["17-Mar-2026","Oli Warna",1,29.5],["17-Mar-2026","PP BN",1,45.0],["17-Mar-2026","PP Hitam",1,67.0],["17-Mar-2026","Falkon",1,44.5],["24-Mar-2026","AG Kotor",1,47.0],["24-Mar-2026","Galon Le",1,40.0],["25-Mar-2026","PP PK",1,35.5],["26-Mar-2026","PET BM",1,98.5],["26-Mar-2026","PET BN",1,117.5],["26-Mar-2026","PET BN",1,121.0],["26-Mar-2026","PET BM",1,106.0],["26-Mar-2026","Oli Warna",1,21.5],["27-Mar-2026","Falkon",1,34.5],["27-Mar-2026","AG Kotor",1,104.5],["27-Mar-2026","PP Warna",1,99.0],["28-Mar-2026","PP Warna",1,103.0],["30-Mar-2026","AG Kotor",1,70.5],["30-Mar-2026","PP Warna",1,125.5],["30-Mar-2026","PP Hitam",1,119.5],["30-Mar-2026","PP Warna",1,137.5],["30-Mar-2026","AG Kotor",1,61.0],["30-Mar-2026","PET BN",1,116.5],["30-Mar-2026","PP Warna",1,59.0],["31-Mar-2026","AG Kotor",1,54.0],["31-Mar-2026","Mainan",1,127.0],["31-Mar-2026","Milku",1,28.5],["31-Mar-2026","PP BN",1,112.0],["31-Mar-2026","Naso",1,103.0],["31-Mar-2026","PET BN",1,99.0],["31-Mar-2026","AG Bersih",1,171.0],["31-Mar-2026","Mountea",1,101.5],["1-Apr-2026","PET BN",1,112.0],["1-Apr-2026","PET BM",1,117.0],["1-Apr-2026","PET BN",1,150.0],["1-Apr-2026","PP Warna",1,134.0],["1-Apr-2026","Galon Le",1,52.0],["1-Apr-2026","Oli Warna",1,66.0],["1-Apr-2026","Sprite",1,70.0],["1-Apr-2026","PP Hitam",1,105.0],["2-Apr-2026","AG Kotor",1,56.5],["2-Apr-2026","AG Kotor",1,140.0],["2-Apr-2026","PP BN",1,106.0],["2-Apr-2026","Falkon",1,102.5],["2-Apr-2026","BLPK",1,97.0],["2-Apr-2026","BLPK",1,97.5],["2-Apr-2026","PP Warna",1,64.0],["2-Apr-2026","Naso",1,70.0],["2-Apr-2026","PP Warna",1,56.0],["4-Apr-2026","Mainan",1,47.0],["4-Apr-2026","BL Warna",1,42.0],["4-Apr-2026","BLPK",1,71.0],["4-Apr-2026","Oli Hitam",1,28.0],["4-Apr-2026","Galon Le",1,66.0],["4-Apr-2026","AG Kotor",1,79.0],["4-Apr-2026","PP PK",1,136.0],["6-Apr-2026","PP Warna",1,94.5],["6-Apr-2026","AG Kotor",1,85.0],["6-Apr-2026","PP Hitam",1,48.5],["6-Apr-2026","Mountea",1,42.5],["6-Apr-2026","Naso",1,59.0],["6-Apr-2026","PP BN",1,61.5],["6-Apr-2026","PET BN",1,133.0],["6-Apr-2026","PP Warna",1,108.0],["7-Apr-2026","PP BN",1,48.0],["7-Apr-2026","PET BM",1,119.0],["7-Apr-2026","PP Warna",1,130.0],["7-Apr-2026","PP Warna",1,135.0],["7-Apr-2026","Naso",1,43.0],["7-Apr-2026","PP BN Sablon",1,41.5],["7-Apr-2026","PP PK",1,36.0],["8-Apr-2026","PP Warna",1,148.5],["8-Apr-2026","PP Warna",1,150.0],["8-Apr-2026","PP BN",1,46.5],["8-Apr-2026","AG Kotor",1,101.5],["8-Apr-2026","PP Hitam",1,98.0],["9-Apr-2026","Galon Le",1,57.0],["9-Apr-2026","PP Warna",1,95.5],["9-Apr-2026","BL Warna",1,83.5],["9-Apr-2026","Oli Warna",1,43.5],["9-Apr-2026","Galon Le",1,82.0],["9-Apr-2026","PET BN",1,148.0],["9-Apr-2026","Falkon",1,69.5],["10-Apr-2026","PP Warna",1,84.0],["10-Apr-2026","PP BN",1,93.0],["10-Apr-2026","PET BM",1,67.0],["10-Apr-2026","PP Warna",1,104.0],["11-Apr-2026","PP Warna",1,89.5],["11-Apr-2026","PET BN",1,119.5],["13-Apr-2026","PET BM",1,148.0],["13-Apr-2026","PP Hitam",1,79.0],["13-Apr-2026","PET BM",1,144.0],["13-Apr-2026","PET BN",1,147.0],["13-Apr-2026","Sprite",1,63.0],["13-Apr-2026","PET BN",1,134.5],["14-Apr-2026","PP Warna",1,87.5],["14-Apr-2026","Galon Le",1,36.5],["14-Apr-2026","AG Kotor",1,131.0],["14-Apr-2026","PET BN",1,151.0],["14-Apr-2026","AG Kotor",1,84.5],["15-Apr-2026","Oli Warna",1,51.5],["15-Apr-2026","Mountea",1,53.0],["15-Apr-2026","AG Kotor",1,40.5],["15-Apr-2026","PET BN",1,117.5],["15-Apr-2026","Galon Le",1,63.5],["15-Apr-2026","Galon Le",1,92.0],["16-Apr-2026","PP Warna",1,116.5],["16-Apr-2026","Milku",1,84.0],["16-Apr-2026","PP Hitam",1,88.0],["16-Apr-2026","AG Kotor",1,95.0],["17-Apr-2026","PP Warna",1,99.5],["17-Apr-2026","AG Kotor",1,94.0],["17-Apr-2026","Galon Le",1,63.5],["17-Apr-2026","PP Warna",1,159.5],["17-Apr-2026","Galon Le",1,62.5],["17-Apr-2026","AG Kotor",1,61.0],["17-Apr-2026","PET BN",1,90.0],["20-Apr-2026","PET BM",1,154.0],["20-Apr-2026","PP Warna",1,69.0],["20-Apr-2026","PP Hitam",1,72.0],["21-Apr-2026","Mountea",1,34.0],["21-Apr-2026","PET BN",1,145.0],["21-Apr-2026","PET BN",1,158.0],["21-Apr-2026","AG Kotor",1,87.0],["21-Apr-2026","PET Mix",1,122.0],["22-Apr-2026","PET Mix",1,162.0],["22-Apr-2026","Galon Le",1,112.0],["22-Apr-2026","BL Warna",1,90.0],["22-Apr-2026","Oli Warna",1,69.5],["23-Apr-2026","PET BN",1,147.0],["23-Apr-2026","PET BN",1,117.5],["23-Apr-2026","PET Mix",1,135.5],["23-Apr-2026","PET Mix",1,145.5],["23-Apr-2026","PET BM",1,121.0],["24-Apr-2026","PET BM",1,119.0],["24-Apr-2026","Galon Le",1,103.5],["24-Apr-2026","PP Hitam",1,74.0],["24-Apr-2026","PP Biru",1,49.5],["24-Apr-2026","Galon Le",1,113.5],["24-Apr-2026","PP Merah",1,77.5],["25-Apr-2026","PET Mix",1,141.0],["25-Apr-2026","PP BN",1,108.5],["25-Apr-2026","PP BN",1,50.5],["27-Apr-2026","PP Merah",1,120.0],["27-Apr-2026","PP Biru",1,78.0],["27-Apr-2026","AG Kotor",1,145.5],["27-Apr-2026","PET Mix",1,148.0],["27-Apr-2026","PP Hijau",1,82.0],["28-Apr-2026","PP Hitam",1,134.0],["28-Apr-2026","PET Mix",1,141.0],["28-Apr-2026","PET Mix",1,136.5],["28-Apr-2026","PET Mix",1,112.0],["28-Apr-2026","PET Mix",1,119.0],["28-Apr-2026","PET Mix",1,47.0],["28-Apr-2026","PET Mix",1,124.0],["29-Apr-2026","PET Mix",1,121.0],["29-Apr-2026","PET Mix",1,92.0],["29-Apr-2026","PET Mix",1,94.0],["29-Apr-2026","PET Mix",1,91.0],["29-Apr-2026","PET Mix",1,100.0],["29-Apr-2026","PET Mix",1,93.5],["29-Apr-2026","PET Mix",1,96.5],["30-Apr-2026","Galon Le",1,88.0],["30-Apr-2026","Galon Le",1,65.5],["30-Apr-2026","Galon Le",1,72.5],["30-Apr-2026","Galon Le",1,44.5],["30-Apr-2026","PP Merah",1,99.5],["30-Apr-2026","PET Mix",1,109.0],["30-Apr-2026","PET Mix",1,85.5],["30-Apr-2026","PET Mix",1,120.0],["1-May-2026","PET Mix",1,112.0],["1-May-2026","PET Mix",1,113.0],["1-May-2026","PET Mix",1,112.5],["1-May-2026","PP Hitam",1,52.0],["1-May-2026","PP Biru",1,50.0],["1-May-2026","AG Kotor",1,77.5],["2-May-2026","PET Mix",1,97.5],["2-May-2026","PP Warna",1,111.5],["2-May-2026","PP Hitam",1,50.5],["2-May-2026","PP BN",1,64.5],["2-May-2026","PP BN",1,74.0],["2-May-2026","Naso",1,113.0],["2-May-2026","PP Warna",1,74.0],["2-May-2026","PET Mix",1,110.0],["2-May-2026","PET Mix",1,130.0],["2-May-2026","PP PK",1,42.5],["4-May-2026","PP Warna",1,64.0],["4-May-2026","Mainan",1,66.5],["4-May-2026","Falkon",1,56.5],["4-May-2026","PP Hitam",1,59.0],["4-May-2026","PP Warna",1,88.0],["4-May-2026","PP Warna",1,100.0],["4-May-2026","PET Mix",1,114.0],["4-May-2026","PET Mix",1,96.5],["5-May-2026","Galon Le",1,73.0],["5-May-2026","PP Warna",1,84.0],["5-May-2026","Falkon",1,57.0],["5-May-2026","PP Hitam",1,75.0],["5-May-2026","Mainan",1,54.0],["7-May-2026","PET Mix",1,110.0],["7-May-2026","PET Mix",1,101.5],["7-May-2026","PET Mix",1,112.0],["7-May-2026","PET Mix",1,108.0],["7-May-2026","Galon Le",1,69.0],["7-May-2026","PET Mix",1,123.0],["7-May-2026","PET Mix",1,113.0],["7-May-2026","PET Mix",1,91.0],["7-May-2026","PP Mambo",1,104.0],["7-May-2026","PET Mix",1,92.0],["8-May-2026","PP BN",1,49.5],["8-May-2026","BL Warna",1,54.0],["8-May-2026","PET Mix",1,119.0],["8-May-2026","PET Mix",1,108.0],["8-May-2026","PP Mambo",1,67.0],["8-May-2026","BLPK",1,111.0],["8-May-2026","PET Mix",1,114.0],["8-May-2026","Naso",1,58.5],["8-May-2026","PET Mix",1,86.0],["9-May-2026","Falkon",1,33.0],["9-May-2026","PP PK",1,75.0],["9-May-2026","PP Hitam",1,77.0],["9-May-2026","PP Mambo",1,132.0],["9-May-2026","PP Mambo",1,61.0],["9-May-2026","BLPK",1,66.0],["9-May-2026","PP BN",1,87.0],["9-May-2026","Oli Mambo",1,56.0],["9-May-2026","PET Mix",1,83.0],["11-May-2026","Galon Le",1,81.5],["11-May-2026","PP Warna",1,92.5],["11-May-2026","PP Hitam",1,71.5],["11-May-2026","PP PK",1,129.0],["11-May-2026","Falkon",1,70.0],["11-May-2026","PP BN",1,67.0],["11-May-2026","Naso",1,110.0],["12-May-2026","PET Mix",1,123.5],["12-May-2026","PET Mix",1,116.0],["12-May-2026","PP Warna",1,121.5],["12-May-2026","Galon Le",1,101.0],["12-May-2026","Galon Le",1,60.5],["12-May-2026","PP Hitam",1,129.0],["12-May-2026","Falkon",1,92.0],["12-May-2026","Naso",1,39.5],["12-May-2026","PP Hitam",1,58.5],["13-May-2026","PET Mix",1,110.5],["13-May-2026","PP Warna",1,137.0],["13-May-2026","PET Mix",1,121.0],["13-May-2026","PET Mix",1,103.0],["13-May-2026","PET Mix",1,105.0],["13-May-2026","PET Mix",1,115.0],["13-May-2026","PET Mix",1,128.0],["13-May-2026","PET Mix",1,111.5],["15-May-2026","PET Mix",1,114.5],["15-May-2026","PP PK",1,111.0],["15-May-2026","BL Warna",1,113.0],["15-May-2026","BL Warna",1,116.0],["15-May-2026","PP BN",1,94.5],["15-May-2026","PP BN",1,56.0],["15-May-2026","BL Warna",1,47.5],["15-May-2026","BLPK",1,132.0],["15-May-2026","PP Warna",1,129.5],["15-May-2026","BLPK",1,100.0],["16-May-2026","Galon Le",1,110.5],["16-May-2026","Naso",1,63.5],["16-May-2026","BLPK",1,97.5],["16-May-2026","PP Warna",1,87.5],["16-May-2026","PP PK",1,40.5],["16-May-2026","PP Hitam",1,114.0],["16-May-2026","PET Mix",1,118.0],["16-May-2026","PP Warna",1,140.0],["16-May-2026","PET Mix",1,113.5],["18-May-2026","PP BN",1,81.0],["18-May-2026","Falkon",1,82.0],["18-May-2026","PP Warna",1,83.5],["18-May-2026","PET Mix",1,106.0],["18-May-2026","Galon Le",1,65.5],["18-May-2026","PP Hitam",1,83.0],["18-May-2026","PP Warna",1,118.0],["18-May-2026","BL Warna",1,118.5],["18-May-2026","PP BN",1,88.5],["19-May-2026","PET Mix",1,98.5],["19-May-2026","PP BN Sablon",1,88.0],["19-May-2026","Galon Le",1,72.0],["19-May-2026","PP Warna",1,130.0],["19-May-2026","AG Kotor",1,94.5],["19-May-2026","AG Kotor",1,91.5],["19-May-2026","AG Kotor",1,86.0],["19-May-2026","PP Warna",1,92.0],["20-May-2026","PET Mix",1,113.5],["20-May-2026","PP Hitam",1,123.5],["20-May-2026","PP PK",1,83.5],["20-May-2026","Falkon",1,72.5],["20-May-2026","PET C",1,94.0],["20-May-2026","PET C",1,86.5],["20-May-2026","PP Hitam",1,131.5],["20-May-2026","PP Mambo",1,94.5],["20-May-2026","PET Mix",1,113.5],["20-May-2026","AG Kotor",1,73.5],["21-May-2026","AG Kotor",1,75.5],["21-May-2026","Galon Le",1,85.5],["21-May-2026","PP Warna",1,86.5],["21-May-2026","PP BN",1,97.5],["21-May-2026","PET Mix",1,104.5],["21-May-2026","PET Mix",1,109.5],["21-May-2026","PET Mix",1,115.0],["21-May-2026","PP Hitam",1,138.5],["22-May-2026","PP Warna",1,105.0],["22-May-2026","PP Warna",1,120.5],["22-May-2026","PET Mix",1,113.5],["22-May-2026","PET Mix",1,98.5],["22-May-2026","PP Warna",1,122.5],["22-May-2026","AG Kotor",1,89.5],["22-May-2026","Galon Le",1,80.0],["23-May-2026","PP Warna",1,133.5],["23-May-2026","PET Mix",1,118.5],["23-May-2026","PET Mix",1,123.0],["23-May-2026","Galon Le",1,90.0],["23-May-2026","PET Mix",1,126.0],["23-May-2026","PP BN",1,89.0],["23-May-2026","BL Warna",1,128.0],["23-May-2026","PP BN",1,92.0],["23-May-2026","PET Mix",1,136.0],["24-May-2026","AG Kotor",1,101.5],["24-May-2026","AG Kotor",1,107.5],["25-May-2026","PP Hitam",1,113.0],["25-May-2026","PET Mix",1,121.0],["25-May-2026","PET Mix",1,120.5],["25-May-2026","PP Warna",1,109.0],["25-May-2026","PET C",1,107.0],["25-May-2026","PET Mix",1,134.0],["25-May-2026","Naso",1,130.0],["25-May-2026","PP PK",1,140.0],["25-May-2026","BLPK",1,120.0],["26-May-2026","PP Warna",1,128.0],["26-May-2026","PP PK",1,94.0],["26-May-2026","Falkon",1,138.5],["26-May-2026","PP Warna",1,141.0],["26-May-2026","PET Mix",1,138.0],["26-May-2026","PET Mix",1,108.0],["26-May-2026","BL Warna",1,130.0],["26-May-2026","BLPK",1,91.0],["26-May-2026","AG Kotor",1,82.0],["28-May-2026","AG Kotor",1,115.5],["28-May-2026","PP Hitam",1,126.0],["28-May-2026","PP Warna",1,142.0],["28-May-2026","PP Warna",1,91.0],["28-May-2026","BL Warna",1,95.5],["28-May-2026","PP BN",1,117.5],["28-May-2026","AG Kotor",1,93.0],["29-May-2026","AG Kotor",1,119.0],["29-May-2026","PET Mix",1,120.5],["29-May-2026","PP Warna",1,119.0],["29-May-2026","BLPK",1,122.0],["29-May-2026","BLPK",1,90.0],["29-May-2026","Naso",1,96.0],["29-May-2026","PET Mix",1,123.0],["29-May-2026","PET Mix",1,122.0],["30-May-2026","Galon Le",1,96.0],["30-May-2026","Galon Le",1,103.0],["30-May-2026","PP Hitam",1,136.0],["30-May-2026","PET Mix",1,122.0],["30-May-2026","PP Warna",1,72.0],["30-May-2026","PET Mix",1,129.0],["31-May-2026","",0,0.0],["1-Jun-2026","",0,0.0],["2-Jun-2026","PET Mix",1,79.0],["2-Jun-2026","PET Mix",1,126.0],["2-Jun-2026","PET Mix",1,117.0],["2-Jun-2026","AG Kotor",1,113.0],["2-Jun-2026","AG Kotor",1,85.0],["3-Jun-2026","PP Warna",1,78.0],["3-Jun-2026","Galon Le",1,122.0],["3-Jun-2026","PP BN",1,107.0],["3-Jun-2026","PP BN",1,51.0],["3-Jun-2026","PP Warna",1,110.0],["3-Jun-2026","PP Warna",1,65.0],["3-Jun-2026","PP PK",1,115.0],["3-Jun-2026","PP PK",1,136.0],["4-Jun-2026","AG Kotor",1,129.0],["4-Jun-2026","PET Mix",1,115.0],["4-Jun-2026","PP Warna",1,91.5],["4-Jun-2026","AG Kotor",1,74.5],["4-Jun-2026","PP Hitam",1,181.5],["4-Jun-2026","PP BN",1,92.5],["4-Jun-2026","Naso",1,104.0],["5-Jun-2026","AG Kotor",1,91.0],["5-Jun-2026","Falkon",1,137.0],["5-Jun-2026","BL Warna",1,121.0],["5-Jun-2026","PET Mix",1,128.0],["5-Jun-2026","Galon Le",1,90.0],["5-Jun-2026","Galon Le",1,122.0],["6-Jun-2026","PP Warna",1,101.5],["6-Jun-2026","PP Warna",1,87.0],["6-Jun-2026","PET Mix",1,122.0],["6-Jun-2026","PET Mix",1,76.5],["6-Jun-2026","PET Mix",1,114.5],["6-Jun-2026","PP Hitam",1,80.5],["8-Jun-2026","PET Mix",1,114.5],["8-Jun-2026","PET Mix",1,114.5],["8-Jun-2026","PET Mix",1,117.0],["8-Jun-2026","PET Mix",1,110.5],["8-Jun-2026","BLPK",1,117.0],["8-Jun-2026","Galon Le",1,81.0],["8-Jun-2026","PP PK",1,90.5],["8-Jun-2026","PP Warna",1,74.0],["9-Jun-2026","AG Kotor",1,116.5],["9-Jun-2026","AG Kotor",1,90.5],["9-Jun-2026","PET Mix",1,130.0],["9-Jun-2026","Galon Le",1,90.5],["9-Jun-2026","BL Warna",1,112.0],["9-Jun-2026","PET Mix",1,133.5],["10-Jun-2026","Naso",1,88.5],["10-Jun-2026","PP Warna",1,125.0],["10-Jun-2026","PP Warna",1,132.5],["10-Jun-2026","PP BN",1,120.5],["10-Jun-2026","AG Kotor",1,99.5],["10-Jun-2026","PET Mix",1,115.5],["10-Jun-2026","PET Mix",1,123.5],["10-Jun-2026","PET Mix",1,68.5],["10-Jun-2026","PP Hitam",1,112.0],["11-Jun-2026","PET Mix",1,120.0],["11-Jun-2026","PET Mix",1,127.0],["11-Jun-2026","BLPK",1,101.0],["11-Jun-2026","PP Warna",1,80.5],["11-Jun-2026","Galon Le",1,94.0],["11-Jun-2026","PET C",1,132.5],["11-Jun-2026","PET C",1,140.0],["11-Jun-2026","PET C",1,128.0],["12-Jun-2026","BL Warna",1,69.0],["12-Jun-2026","PP Warna",1,103.0],["12-Jun-2026","PP Warna",1,87.5],["12-Jun-2026","PP BN",1,100.0],["12-Jun-2026","PET Mix",1,134.0],["12-Jun-2026","PET Mix",1,137.5],["12-Jun-2026","PP Hitam",1,123.0],["13-Jun-2026","AG Kotor",1,105.0],["13-Jun-2026","PP PK",1,103.0],["13-Jun-2026","PET Mix",1,118.0],["13-Jun-2026","PET Mix",1,128.0],["13-Jun-2026","PET Mix",1,122.5],["13-Jun-2026","PET Mix",1,126.0],["13-Jun-2026","Falkon",1,76.5],["13-Jun-2026","Galon Le",1,110.0],["15-Jun-2026","PET Mix",1,127.0],["15-Jun-2026","PET Mix",1,136.0],["17-Jun-2026","PP Warna",1,118.0],["17-Jun-2026","PET C",1,130.5],["17-Jun-2026","PET C",1,156.5],["17-Jun-2026","PP Warna",1,102.5],["17-Jun-2026","PP Hitam",1,117.0],["17-Jun-2026","PET Mix",1,131.0],["17-Jun-2026","PET Mix",1,121.0],["17-Jun-2026","AG Kotor",1,121.0],["18-Jun-2026","AG Kotor",1,126.0],["18-Jun-2026","AG Kotor",1,67.0],["18-Jun-2026","PET Mix",1,116.0],["18-Jun-2026","PET Mix",1,135.0],["18-Jun-2026","PP Warna",1,117.5],["18-Jun-2026","BL Warna",1,145.5],["18-Jun-2026","PP BN",1,108.0],["18-Jun-2026","PP BN",1,88.0],["19-Jun-2026","PET Mix",1,121.0],["19-Jun-2026","PET Mix",1,135.0],["19-Jun-2026","Naso",1,124.5],["19-Jun-2026","PP Warna",1,149.5],["19-Jun-2026","AG Kotor",1,126.5],["19-Jun-2026","PP Abu",1,65.0],["20-Jun-2026","PET Mix",1,117.5],["20-Jun-2026","PET Mix",1,128.5],["20-Jun-2026","PET Mix",1,125.5],["20-Jun-2026","PET Mix",1,123.0],["20-Jun-2026","PET Mix",1,128.0],["20-Jun-2026","PET Mix",1,104.5],["20-Jun-2026","PP Warna",1,123.0],["20-Jun-2026","BLPK",1,140.0],["20-Jun-2026","BLPK",1,48.0],["22-Jun-2026","BL Warna",1,85.5],["22-Jun-2026","PP Warna",1,70.5],["22-Jun-2026","PET Mix",1,111.5],["22-Jun-2026","Galon Le",1,122.0],["22-Jun-2026","Galon Le",1,121.0],["22-Jun-2026","Falkon",1,74.5],["22-Jun-2026","Naso",1,66.0],["22-Jun-2026","PP Hitam",1,157.5]];
+const RAW_CACAH = [["18-Jun-2026","PP BN",836.0],["19-Jun-2026","PP BN",255.0],["20-Jun-2026","PP BN",31.5],["20-Jun-2026","PP PK",702.0],["22-Jun-2026","PP PK",186.0]];
+
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MON_FULL = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const COLORS = ["#34d399","#60a5fa","#fbbf24","#fb7185","#a78bfa","#22d3ee","#f97316","#e879f9","#4ade80","#38bdf8","#facc15","#f43f5e"];
+
+let activeMonth = 'all';
+let dateFrom = null;
+let dateTo = null;
+let selectedMaterials = new Set();
+let allMaterials = [];
+const CHARTS = {};
+
+function getMonthKey(dateStr) {
+  const parts = dateStr.split('-');
+  return parts[parts.length - 1] === '2025' ? 'Dec2025' : MONTHS[parseInt(parts[1]?.length > 2 ? parts[1] : (parts[0].length <= 2 ? parts[1] : parts[1])) - 1] || dateStr.slice(dateStr.indexOf('-')+1, dateStr.lastIndexOf('-'));
+}
+function parseDate(s) {
+  const p = s.split('-');
+  // d-Mon-YYYY or d-M-YYYY
+  if (isNaN(p[1])) {
+    const mi = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].indexOf(p[1]);
+    return new Date(+p[2], mi, +p[0]);
+  }
+  return new Date(+p[2], +p[1]-1, +p[0]);
+}
+function monthOf(s) {
+  const d = parseDate(s);
+  return MONTHS[d.getMonth()];
+}
+function fmt(n) { return n >= 1000 ? (n/1000).toFixed(1)+'k' : Math.round(n).toLocaleString('id'); }
+function fmtFull(n) { return Math.round(n).toLocaleString('id'); }
+
+function inDateRange(dateStr) {
+  if (!dateFrom && !dateTo) return true;
+  const d = parseDate(dateStr);
+  if (dateFrom && d < dateFrom) return false;
+  if (dateTo && d > dateTo) return false;
+  return true;
+}
+
+function filterByMonth(data, dateField, matField) {
+  return data.filter(r => {
+    if (activeMonth !== 'all' && monthOf(r[dateField]) !== activeMonth) return false;
+    if (!inDateRange(r[dateField])) return false;
+    if (selectedMaterials.size > 0 && matField !== undefined) {
+      const mat = r[matField] || '—';
+      if (!selectedMaterials.has(mat)) return false;
+    }
+    return true;
+  });
+}
+
+function aggByMonth(data, dateIdx, valIdx) {
+  const mo = {};
+  data.forEach(r => {
+    const m = monthOf(r[dateIdx]);
+    mo[m] = (mo[m]||0) + (r[valIdx]||0);
+  });
+  return mo;
+}
+
+function aggByKey(data, keyIdx, valIdx) {
+  const m = {};
+  data.forEach(r => {
+    const k = r[keyIdx]||'—';
+    m[k] = (m[k]||0) + (r[valIdx]||0);
+  });
+  return m;
+}
+
+function topN(obj, n) {
+  return Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,n);
+}
+
+function renderChart(id, config) {
+  if (CHARTS[id]) { CHARTS[id].destroy(); }
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  CHARTS[id] = new Chart(ctx, config);
+}
+
+// Draws a short dashed line across each bar at its dataset's "target" value,
+// so every bar shows its own minimum-target threshold.
+const targetLinePlugin = {
+  id: 'targetLinePlugin',
+  afterDatasetsDraw(chart) {
+    const { ctx, scales: { y } } = chart;
+    chart.data.datasets.forEach((ds, dsIndex) => {
+      if (ds.target == null) return;
+      const meta = chart.getDatasetMeta(dsIndex);
+      if (!meta || meta.hidden) return;
+      const yTarget = y.getPixelForValue(ds.target);
+      meta.data.forEach(bar => {
+        const half = bar.width / 2;
+        const x1 = bar.x - half, x2 = bar.x + half;
+        ctx.save();
+        ctx.beginPath();
+        ctx.setLineDash([4, 3]);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.85)' : 'rgba(15,23,42,0.85)';
+        ctx.moveTo(x1, yTarget);
+        ctx.lineTo(x2, yTarget);
+        ctx.stroke();
+        ctx.restore();
+      });
+    });
+  }
+};
+
+const isDark = () => !document.body.classList.contains('light');
+const textColor = () => isDark() ? 'rgba(255,255,255,0.55)' : 'rgba(15,23,42,0.5)';
+const gridColor = () => isDark() ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
+
+function baseScales(stacked) {
+  return {
+    x: { stacked, ticks:{color:textColor(),font:{size:10}}, grid:{color:gridColor()} },
+    y: { stacked, ticks:{color:textColor(),font:{size:10},callback:v=>fmt(v)}, grid:{color:gridColor()} }
+  };
+}
+
+function renderProg(containerId, entries, colorArr) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const max = entries[0]?.[1] || 1;
+  el.innerHTML = entries.map(([name, val], i) => `
+    <div class="prog-item">
+      <div class="prog-top">
+        <span class="prog-name" title="${name}">${name}</span>
+        <span class="prog-val">${fmt(val)} kg</span>
+      </div>
+      <div class="prog-bar-bg"><div class="prog-fill" style="width:${(val/max*100).toFixed(1)}%;background:${colorArr[i%colorArr.length]}"></div></div>
+    </div>`).join('');
+}
+
+// Renders a single summary bar comparing a period total against its minimum target.
+function renderTargetSummary(containerId, label, total, target, color) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const pct = target > 0 ? (total / target * 100) : 0;
+  const hit = total >= target;
+  const fillPct = Math.min(pct, 100).toFixed(1);
+  const statusColor = hit ? '#34d399' : color;
+  el.innerHTML = `
+    <div class="prog-top">
+      <span class="prog-name" style="max-width:none">${label} ${hit ? '✓' : ''}</span>
+      <span class="prog-val">${fmt(total)} / ${fmt(target)} kg</span>
+    </div>
+    <div class="prog-bar-bg"><div class="prog-fill" style="width:${fillPct}%;background:${statusColor}"></div></div>
+    <div class="prog-pct">${pct.toFixed(0)}% dari target${hit ? '' : ' · kurang ' + fmt(target-total) + ' kg'}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+//  SORTATION
+// ═══════════════════════════════════════════════
+function renderSortation() {
+  const data = filterByMonth(RAW_SORT, 0, 4).filter(r => r[5] > 0);
+  const total = data.reduce((s,r)=>s+r[5],0);
+  const c1 = data.filter(r=>r[2]==='Conveyor 1').reduce((s,r)=>s+r[5],0);
+  const c2 = data.filter(r=>r[2]==='Conveyor 2').reduce((s,r)=>s+r[5],0);
+  const ot = data.filter(r=>r[1].includes('Lembur')).reduce((s,r)=>s+r[5],0);
+  const otDays = new Set(data.filter(r=>r[1].includes('Lembur')).map(r=>r[0])).size;
+  const days = new Set(data.map(r=>r[0])).size;
+  const items = new Set(data.filter(r=>r[4]).map(r=>r[4])).size;
+
+  document.getElementById('s-total').textContent = fmt(total);
+  document.getElementById('s-days').textContent = `${days} hari kerja`;
+  document.getElementById('s-conv1').textContent = fmt(c1);
+  document.getElementById('s-c1-pct').textContent = `${total>0?(c1/total*100).toFixed(1):0}% dari total`;
+  document.getElementById('s-conv2').textContent = fmt(c2);
+  document.getElementById('s-c2-pct').textContent = `${total>0?(c2/total*100).toFixed(1):0}% dari total`;
+  document.getElementById('s-ot').textContent = fmt(ot);
+  document.getElementById('s-ot-days').textContent = `${otDays} hari lembur`;
+  document.getElementById('s-avg').textContent = days > 0 ? fmt(total/days) : '—';
+  document.getElementById('s-items').textContent = items;
+
+  // Daily bar chart (grouped by date, conv1 vs conv2)
+  const byDate = {};
+  data.forEach(r => {
+    if (!byDate[r[0]]) byDate[r[0]] = {c1:0, c2:0};
+    if (r[2]==='Conveyor 1') byDate[r[0]].c1 += r[5];
+    else byDate[r[0]].c2 += r[5];
+  });
+  const dates = Object.keys(byDate).sort((a,b)=>parseDate(a)-parseDate(b));
+  const shortDates = dates.map(d => { const p=parseDate(d); return `${p.getDate()} ${MONTHS[p.getMonth()]}`; });
+  renderChart('s-daily-chart', {
+    type:'bar', data:{
+      labels:shortDates,
+      datasets:[
+        {label:'Conveyor 1',data:dates.map(d=>byDate[d].c1),backgroundColor:'rgba(96,165,250,0.7)',borderRadius:3,stack:'s'},
+        {label:'Conveyor 2',data:dates.map(d=>byDate[d].c2),backgroundColor:'rgba(167,139,250,0.7)',borderRadius:3,stack:'s'},
+      ]
+    }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:textColor(),font:{size:11},boxWidth:12}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmtFull(c.raw)} kg`}}},scales:baseScales(true)}
+  });
+
+  // Monthly
+  const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun'];
+  const byMoC1 = aggByMonth(data.filter(r=>r[2]==='Conveyor 1'), 0, 5);
+  const byMoC2 = aggByMonth(data.filter(r=>r[2]==='Conveyor 2'), 0, 5);
+  renderChart('s-monthly-chart', {
+    type:'bar', data:{
+      labels:MONTH_ORDER,
+      datasets:[
+        {label:'Conveyor 1',data:MONTH_ORDER.map(m=>byMoC1[m]||0),backgroundColor:'rgba(96,165,250,0.75)',borderRadius:5,stack:'m'},
+        {label:'Conveyor 2',data:MONTH_ORDER.map(m=>byMoC2[m]||0),backgroundColor:'rgba(167,139,250,0.75)',borderRadius:5,stack:'m'},
+      ]
+    }, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:textColor(),font:{size:11},boxWidth:12}}},scales:baseScales(true)}
+  });
+
+  // Item breakdown horizontal bar
+  const byItem = aggByKey(data.filter(r=>r[4]), 4, 5);
+  const topItems = topN(byItem, 12);
+  renderChart('s-item-chart', {
+    type:'bar', data:{
+      labels:topItems.map(e=>e[0]),
+      datasets:[{label:'kg',data:topItems.map(e=>e[1]),backgroundColor:COLORS,borderRadius:4}]
+    }, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmtFull(c.raw)} kg`}}},scales:{x:{ticks:{color:textColor(),font:{size:10},callback:v=>fmt(v)},grid:{color:gridColor()}},y:{ticks:{color:textColor(),font:{size:10}},grid:{display:false}}}}
+  });
+
+  // SAW vs SDT donut
+  const saw = data.filter(r=>r[3]==='SAW (Jenis)').reduce((s,r)=>s+r[5],0);
+  const sdt = data.filter(r=>r[3]==='SDT (Detail)').reduce((s,r)=>s+r[5],0);
+  document.getElementById('s-donut-val').textContent = fmt(total);
+  renderChart('s-type-chart', {
+    type:'doughnut', data:{labels:['SAW (Jenis)','SDT (Detail)'],datasets:[{data:[saw,sdt],backgroundColor:['rgba(96,165,250,0.85)','rgba(167,139,250,0.85)'],borderWidth:2,borderColor:isDark()?'#161f30':'#fff'}]},
+    options:{cutout:'70%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtFull(c.raw)} kg`}}}}
+  });
+  document.getElementById('s-type-legend').innerHTML = ['SAW (Jenis)','SDT (Detail)'].map((l,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${['rgba(96,165,250,0.85)','rgba(167,139,250,0.85)'][i]}"></div>${l}</div>`).join('');
+
+  // Table
+  const sorted = [...data].sort((a,b)=>parseDate(b[0])-parseDate(a[0]));
+  document.getElementById('s-tbl-count').textContent = `${sorted.length} entri`;
+  document.getElementById('s-tbl').innerHTML = sorted.map((r,i)=>`
+    <tr>
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td style="font-size:11px;white-space:nowrap">${r[0]}</td>
+      <td><span style="font-size:10px;padding:2px 7px;border-radius:12px;background:${r[1].includes('Lembur')?'var(--amber2)':'var(--bg2)'};color:${r[1].includes('Lembur')?'var(--amber)':'var(--text3)'}">${r[1].includes('Lembur')?'Lembur':'Normal'}</span></td>
+      <td style="font-size:11.5px;font-weight:600;color:${r[2]==='Conveyor 1'?'var(--blue)':'var(--violet)'}">${r[2]}</td>
+      <td style="font-size:11px;color:var(--text3)">${r[3]}</td>
+      <td style="font-size:11.5px">${r[4]||'—'}</td>
+      <td class="tr num">${fmtFull(r[5])}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  REMOVER
+// ═══════════════════════════════════════════════
+function renderRemover() {
+  const data = filterByMonth(RAW_REM, 0, 1).filter(r=>r[2]>0);
+  const total = data.reduce((s,r)=>s+r[2],0);
+  const days = new Set(data.map(r=>r[0])).size;
+  const byLabel = aggByKey(data, 1, 2);
+  const topL = topN(byLabel, 20);
+  const topDay = {};
+  data.forEach(r => { topDay[r[0]] = (topDay[r[0]]||0)+r[2]; });
+  const peakEntry = Object.entries(topDay).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+  const MONTH_ORDER = ['Feb','Mar','Apr','May','Jun'];
+
+  document.getElementById('r-total').textContent = fmt(total);
+  document.getElementById('r-entries').textContent = `${data.length} entri`;
+  document.getElementById('r-avg').textContent = days>0?fmt(total/days):'—';
+  document.getElementById('r-days').textContent = `${days} hari aktif`;
+  document.getElementById('r-labels').textContent = Object.keys(byLabel).length;
+  document.getElementById('r-top-label').textContent = topL[0]?.[0]||'—';
+  document.getElementById('r-top-kg').textContent = topL[0]?`${fmt(topL[0][1])} kg`:'—';
+  document.getElementById('r-peak-day').textContent = peakEntry[0];
+  document.getElementById('r-peak-kg').textContent = `${fmt(peakEntry[1])} kg`;
+
+  // Monthly bar
+  const byMo = aggByMonth(data, 0, 2);
+  renderChart('r-monthly-chart', {
+    type:'bar', data:{labels:MONTH_ORDER,datasets:[{label:'kg diremove',data:MONTH_ORDER.map(m=>byMo[m]||0),backgroundColor:MONTH_ORDER.map((_,i)=>COLORS[(i+3)%COLORS.length]),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmtFull(c.raw)} kg`}}},scales:baseScales(false)}
+  });
+
+  // Donut
+  const top7 = topN(byLabel,7);
+  const otherSum = total - top7.reduce((s,e)=>s+e[1],0);
+  const labels7 = [...top7.map(e=>e[0]), otherSum>0?'Lainnya':null].filter(Boolean);
+  const vals7 = [...top7.map(e=>e[1]), otherSum>0?otherSum:null].filter(v=>v!==null);
+  document.getElementById('r-donut-val').textContent = fmt(total);
+  renderChart('r-donut-chart', {
+    type:'doughnut', data:{labels:labels7,datasets:[{data:vals7,backgroundColor:COLORS.slice(0,labels7.length),borderWidth:2,borderColor:isDark()?'#161f30':'#fff'}]},
+    options:{cutout:'68%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtFull(c.raw)} kg`}}}}
+  });
+  document.getElementById('r-donut-legend').innerHTML = labels7.map((l,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${l}</div>`).join('');
+
+  // Progress bars
+  renderProg('r-label-prog', topN(byLabel,8), COLORS);
+
+  // Table
+  document.getElementById('r-tbl-count').textContent = `${data.length} entri`;
+  document.getElementById('r-tbl').innerHTML = [...data].sort((a,b)=>parseDate(b[0])-parseDate(a[0])).map((r,i)=>`
+    <tr>
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td style="font-size:11px">${r[0]}</td>
+      <td style="font-size:11.5px;color:var(--coral)">${r[1]}</td>
+      <td class="tr num c-coral">${fmtFull(r[2])}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  CACAH
+// ═══════════════════════════════════════════════
+function renderCacah() {
+  const data = filterByMonth(RAW_CACAH, 0, 1).filter(r=>r[2]>0 && r[1]);
+  const total = data.reduce((s,r)=>s+r[2],0);
+  const days = new Set(data.map(r=>r[0])).size;
+  const byType = aggByKey(data, 1, 2);
+  const topT = topN(byType, 20);
+  const topDay = {};
+  data.forEach(r => { topDay[r[0]] = (topDay[r[0]]||0)+r[2]; });
+  const peakEntry = Object.entries(topDay).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+  const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun'];
+
+  document.getElementById('cc-total').textContent = fmt(total);
+  document.getElementById('cc-entries').textContent = `${data.length} entri`;
+  document.getElementById('cc-avg').textContent = days>0?fmt(total/days):'—';
+  document.getElementById('cc-days').textContent = `${days} hari aktif`;
+  document.getElementById('cc-types').textContent = Object.keys(byType).length;
+  document.getElementById('cc-top-type').textContent = topT[0]?.[0]||'—';
+  document.getElementById('cc-top-kg').textContent = topT[0]?`${fmt(topT[0][1])} kg`:'—';
+  document.getElementById('cc-peak-day').textContent = peakEntry[0];
+  document.getElementById('cc-peak-kg').textContent = `${fmt(peakEntry[1])} kg`;
+
+  // Monthly bar
+  const byMo = aggByMonth(data, 0, 2);
+  renderChart('cc-monthly-chart', {
+    type:'bar', data:{labels:MONTH_ORDER,datasets:[{label:'Cacah (kg)',data:MONTH_ORDER.map(m=>byMo[m]||0),backgroundColor:MONTH_ORDER.map((_,i)=>COLORS[(i+6)%COLORS.length]),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmtFull(c.raw)} kg`}}},scales:baseScales(false)}
+  });
+
+  // Donut
+  const top7 = topN(byType,7);
+  const otherSum = total - top7.reduce((s,e)=>s+e[1],0);
+  const labels7 = [...top7.map(e=>e[0]), otherSum>0?'Lainnya':null].filter(Boolean);
+  const vals7 = [...top7.map(e=>e[1]), otherSum>0?otherSum:null].filter(v=>v!==null);
+  document.getElementById('cc-donut-val').textContent = fmt(total);
+  if (vals7.length === 0) {
+    document.getElementById('cc-donut-legend').innerHTML = '<div class="empty">Belum ada data</div>';
+  } else {
+    renderChart('cc-donut-chart', {
+      type:'doughnut', data:{labels:labels7,datasets:[{data:vals7,backgroundColor:COLORS.slice(0,labels7.length),borderWidth:2,borderColor:isDark()?'#161f30':'#fff'}]},
+      options:{cutout:'68%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtFull(c.raw)} kg`}}}}
+    });
+    document.getElementById('cc-donut-legend').innerHTML = labels7.map((l,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${l}</div>`).join('');
+  }
+
+  // Progress bars
+  if (topT.length === 0) {
+    document.getElementById('cc-type-prog').innerHTML = '<div class="empty">Belum ada data material cacah</div>';
+  } else {
+    renderProg('cc-type-prog', topN(byType,8), COLORS);
+  }
+
+  // Table
+  document.getElementById('cc-tbl-count').textContent = `${data.length} entri`;
+  document.getElementById('cc-tbl').innerHTML = data.length === 0
+    ? '<tr><td colspan="4" class="empty">Belum ada data cacah pada periode ini</td></tr>'
+    : [...data].sort((a,b)=>parseDate(b[0])-parseDate(a[0])).map((r,i)=>`
+    <tr>
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td style="font-size:11px">${r[0]}</td>
+      <td style="font-size:11.5px;color:var(--amber)">${r[1]}</td>
+      <td class="tr num c-amber">${fmtFull(r[2])}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  PRODUCTION
+// ═══════════════════════════════════════════════
+function renderProduction() {
+  const data = filterByMonth(RAW_PROD, 0, 1).filter(r=>r[3]>0 && r[1]);
+  const total = data.reduce((s,r)=>s+r[3],0);
+  const balls = data.reduce((s,r)=>s+r[2],0);
+  const days = new Set(data.map(r=>r[0])).size;
+  const byType = aggByKey(data, 1, 3);
+  const topT = topN(byType, 20);
+  const topDay = {};
+  data.forEach(r => { topDay[r[0]] = (topDay[r[0]]||0)+r[3]; });
+  const peakEntry = Object.entries(topDay).sort((a,b)=>b[1]-a[1])[0]||['—',0];
+  const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun'];
+
+  document.getElementById('p-total').textContent = fmt(total);
+  document.getElementById('p-balls').textContent = `${balls} ball press`;
+  document.getElementById('p-avg').textContent = days>0?fmt(total/days):'—';
+  document.getElementById('p-days').textContent = `${days} hari aktif`;
+  document.getElementById('p-avg-ball').textContent = balls>0?fmt(total/balls):'—';
+  document.getElementById('p-top-type').textContent = topT[0]?.[0]||'—';
+  document.getElementById('p-top-kg').textContent = topT[0]?`${fmt(topT[0][1])} kg`:'—';
+  document.getElementById('p-peak-day').textContent = peakEntry[0];
+  document.getElementById('p-peak-kg').textContent = `${fmt(peakEntry[1])} kg`;
+  document.getElementById('p-types').textContent = Object.keys(byType).length;
+
+  // Monthly kg
+  const byMo = aggByMonth(data, 0, 3);
+  renderChart('p-monthly-chart', {
+    type:'bar', data:{labels:MONTH_ORDER,datasets:[{label:'Produksi (kg)',data:MONTH_ORDER.map(m=>byMo[m]||0),backgroundColor:MONTH_ORDER.map((_,i)=>COLORS[(i+5)%COLORS.length]),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmtFull(c.raw)} kg`}}},scales:baseScales(false)}
+  });
+
+  // Monthly balls
+  const ballsByMo = {};
+  data.forEach(r => { const m=monthOf(r[0]); ballsByMo[m]=(ballsByMo[m]||0)+r[2]; });
+  renderChart('p-balls-chart', {
+    type:'line', data:{labels:MONTH_ORDER,datasets:[{label:'Ball Press',data:MONTH_ORDER.map(m=>ballsByMo[m]||0),borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,0.12)',fill:true,tension:.35,pointBackgroundColor:'#a78bfa',pointRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw} ball`}}},scales:baseScales(false)}
+  });
+
+  // Horizontal bar by type
+  const top15 = topN(byType,15);
+  renderChart('p-type-chart', {
+    type:'bar', data:{labels:top15.map(e=>e[0]),datasets:[{label:'kg',data:top15.map(e=>e[1]),backgroundColor:COLORS,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmtFull(c.raw)} kg`}}},scales:{x:{ticks:{color:textColor(),font:{size:10},callback:v=>fmt(v)},grid:{color:gridColor()}},y:{ticks:{color:textColor(),font:{size:10}},grid:{display:false}}}}
+  });
+
+  // Donut
+  const top7 = topN(byType,7);
+  const otherSum = total - top7.reduce((s,e)=>s+e[1],0);
+  const labels7 = [...top7.map(e=>e[0]), otherSum>0?'Lainnya':null].filter(Boolean);
+  const vals7 = [...top7.map(e=>e[1]), otherSum>0?otherSum:null].filter(v=>v!==null);
+  document.getElementById('p-donut-val').textContent = fmt(total);
+  renderChart('p-donut-chart', {
+    type:'doughnut', data:{labels:labels7,datasets:[{data:vals7,backgroundColor:COLORS.slice(0,labels7.length),borderWidth:2,borderColor:isDark()?'#161f30':'#fff'}]},
+    options:{cutout:'68%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtFull(c.raw)} kg`}}}}
+  });
+  document.getElementById('p-donut-legend').innerHTML = labels7.map((l,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${COLORS[i%COLORS.length]}"></div>${l}</div>`).join('');
+
+  // Table
+  document.getElementById('p-tbl-count').textContent = `${data.length} entri`;
+  document.getElementById('p-tbl').innerHTML = [...data].sort((a,b)=>parseDate(b[0])-parseDate(a[0])).map((r,i)=>`
+    <tr>
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td style="font-size:11px">${r[0]}</td>
+      <td style="font-size:11.5px;font-weight:600;color:var(--violet)">${r[1]}</td>
+      <td class="tr num">${r[2]}</td>
+      <td class="tr num c-violet">${fmtFull(r[3])}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  OVERVIEW
+// ═══════════════════════════════════════════════
+function renderOverview() {
+  const sortData  = filterByMonth(RAW_SORT, 0, 4).filter(r=>r[5]>0);
+  const remData   = filterByMonth(RAW_REM, 0, 1).filter(r=>r[2]>0);
+  const prodData  = filterByMonth(RAW_PROD, 0, 1).filter(r=>r[3]>0 && r[1]);
+  const cacahData = filterByMonth(RAW_CACAH, 0, 1).filter(r=>r[2]>0 && r[1]);
+
+  const sortTotal  = sortData.reduce((s,r)=>s+r[5],0);
+  const remTotal   = remData.reduce((s,r)=>s+r[2],0);
+  const prodTotal  = prodData.reduce((s,r)=>s+r[3],0);
+  const cacahTotal = cacahData.reduce((s,r)=>s+r[2],0);
+  const sortDays  = new Set(sortData.map(r=>r[0])).size;
+  const prodDays  = new Set(prodData.map(r=>r[0])).size;
+  const prodBalls = prodData.reduce((s,r)=>s+r[2],0);
+  const prodTypes = new Set(prodData.map(r=>r[1])).size;
+
+  document.getElementById('ov-sort-total').textContent = fmt(sortTotal);
+  document.getElementById('ov-sort-days').textContent = `${sortDays} hari kerja`;
+  document.getElementById('ov-rem-total').textContent = fmt(remTotal);
+  document.getElementById('ov-rem-days').textContent = `${remData.length} entri`;
+  document.getElementById('ov-prod-total').textContent = fmt(prodTotal);
+  document.getElementById('ov-prod-balls').textContent = `${prodBalls} ball press`;
+  document.getElementById('ov-sort-daily').textContent = sortDays>0?fmt(sortTotal/sortDays):'—';
+  document.getElementById('ov-prod-daily').textContent = prodDays>0?fmt(prodTotal/prodDays):'—';
+  document.getElementById('ov-prod-types').textContent = prodTypes;
+  document.getElementById('ov-cacah-total').textContent = fmt(cacahTotal);
+  document.getElementById('ov-cacah-days').textContent = `${cacahData.length} entri`;
+
+  // Trend chart — all 4 by month (grouped bars, each with its own monthly target)
+  const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun'];
+  const sortByMo  = aggByMonth(sortData, 0, 5);
+  const remByMo   = aggByMonth(remData, 0, 2);
+  const prodByMo  = aggByMonth(prodData, 0, 3);
+  const cacahByMo = aggByMonth(cacahData, 0, 2);
+
+  // Monthly minimum targets (kg). 1 ton = 1000 kg.
+  const TARGETS = { Sortasi: 4000, Remover: 1000, Produksi: 1000, Cacah: 1000 };
+
+  renderChart('ov-trend-chart', {
+    type:'bar', data:{
+      labels:MONTH_ORDER,
+      datasets:[
+        {label:'Sortasi',data:MONTH_ORDER.map(m=>sortByMo[m]||0),backgroundColor:'rgba(52,211,153,0.7)',borderRadius:4,target:TARGETS.Sortasi},
+        {label:'Remover',data:MONTH_ORDER.map(m=>remByMo[m]||0),backgroundColor:'rgba(251,113,133,0.7)',borderRadius:4,target:TARGETS.Remover},
+        {label:'Produksi',data:MONTH_ORDER.map(m=>prodByMo[m]||0),backgroundColor:'rgba(167,139,250,0.7)',borderRadius:4,target:TARGETS.Produksi},
+        {label:'Cacah',data:MONTH_ORDER.map(m=>cacahByMo[m]||0),backgroundColor:'rgba(249,115,22,0.7)',borderRadius:4,target:TARGETS.Cacah},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{labels:{color:textColor(),font:{size:11},boxWidth:12}},
+        tooltip:{callbacks:{
+          afterBody:(items)=>{
+            const ds = items[0]?.dataset;
+            if (!ds || ds.target == null) return '';
+            const val = ds.data[items[0].dataIndex] || 0;
+            const diff = val - ds.target;
+            const status = diff >= 0 ? `✓ +${fmt(diff)} kg dari target` : `✗ kurang ${fmt(Math.abs(diff))} kg dari target`;
+            return `Target: ${fmt(ds.target)} kg\n${status}`;
+          }
+        }}
+      },
+      scales:baseScales(false)
+    },
+    plugins:[targetLinePlugin]
+  });
+  document.getElementById('ov-trend-legend').innerHTML='';
+
+  // Donut distribution
+  document.getElementById('ov-donut-total').textContent = fmt(sortTotal+remTotal+prodTotal+cacahTotal);
+  renderChart('ov-donut-chart', {
+    type:'doughnut', data:{labels:['Sortasi','Remover','Produksi','Cacah'],datasets:[{data:[sortTotal,remTotal,prodTotal,cacahTotal],backgroundColor:['rgba(52,211,153,0.85)','rgba(251,113,133,0.85)','rgba(167,139,250,0.85)','rgba(249,115,22,0.85)'],borderWidth:2,borderColor:isDark()?'#161f30':'#fff'}]},
+    options:{cutout:'68%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtFull(c.raw)} kg`}}}}
+  });
+  document.getElementById('ov-donut-legend').innerHTML = ['Sortasi','Remover','Produksi','Cacah'].map((l,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${['rgba(52,211,153,0.85)','rgba(251,113,133,0.85)','rgba(167,139,250,0.85)','rgba(249,115,22,0.85)'][i]}"></div>${l}</div>`).join('');
+
+  // Top 5s
+  renderTargetSummary('ov-sort-target', 'Total Sortasi', sortTotal, TARGETS.Sortasi, '#34d399');
+  const sortByItem = aggByKey(sortData.filter(r=>r[4]), 4, 5);
+  renderProg('ov-sort-top', topN(sortByItem,5), ['#34d399','#22d3ee','#60a5fa','#a78bfa','#fb7185']);
+  renderTargetSummary('ov-rem-target', 'Total Remover', remTotal, TARGETS.Remover, '#fb7185');
+  const remByLabel = aggByKey(remData, 1, 2);
+  renderProg('ov-rem-top', topN(remByLabel,5), ['#fb7185','#fbbf24','#f97316','#e879f9','#fb7185']);
+  renderTargetSummary('ov-prod-target', 'Total Produksi', prodTotal, TARGETS.Produksi, '#a78bfa');
+  const prodByType = aggByKey(prodData, 1, 3);
+  renderProg('ov-prod-top', topN(prodByType,5), ['#a78bfa','#60a5fa','#22d3ee','#34d399','#fbbf24']);
+  renderTargetSummary('ov-cacah-target', 'Total Cacah', cacahTotal, TARGETS.Cacah, '#f97316');
+  const cacahByType = aggByKey(cacahData, 1, 2);
+  const cacahTop5 = topN(cacahByType,5);
+  if (cacahTop5.length === 0) {
+    document.getElementById('ov-cacah-top').innerHTML = '<div class="empty">Belum ada data</div>';
+  } else {
+    renderProg('ov-cacah-top', cacahTop5, ['#f97316','#fbbf24','#fb923c','#facc15','#fdba74']);
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════
+function setMonth(m, btn) {
+  activeMonth = m;
+  document.querySelectorAll('.fpill').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function onDateChange() {
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  dateFrom = from ? new Date(from+'T00:00:00') : null;
+  dateTo = to ? new Date(to+'T23:59:59') : null;
+  renderAll();
+}
+
+function buildMaterialList() {
+  const set = new Set();
+  RAW_SORT.forEach(r=>{ if(r[4]) set.add(r[4]); });
+  RAW_REM.forEach(r=>{ if(r[1]) set.add(r[1]); });
+  RAW_PROD.forEach(r=>{ if(r[1]) set.add(r[1]); });
+  RAW_CACAH.forEach(r=>{ if(r[1]) set.add(r[1]); });
+  allMaterials = [...set].sort();
+  renderMaterialList();
+}
+
+function renderMaterialList(filterStr) {
+  const list = document.getElementById('dd-material-list');
+  const items = filterStr ? allMaterials.filter(m=>m.toLowerCase().includes(filterStr.toLowerCase())) : allMaterials;
+  if (items.length === 0) { list.innerHTML = '<div class="dd-empty">Tidak ditemukan</div>'; return; }
+  list.innerHTML = items.map(m=>{
+    const checked = selectedMaterials.has(m);
+    return `<div class="dd-item ${checked?'checked':''}" onclick="toggleMaterial('${m.replace(/'/g,"\\'")}')">
+      <input type="checkbox" ${checked?'checked':''} onclick="event.stopPropagation();toggleMaterial('${m.replace(/'/g,"\\'")}')">
+      <span>${m}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleMaterial(m) {
+  if (selectedMaterials.has(m)) selectedMaterials.delete(m);
+  else selectedMaterials.add(m);
+  updateMaterialTrigger();
+  renderMaterialList(document.querySelector('#dd-material-panel .dd-search').value);
+  renderAll();
+}
+
+function selectAllMaterial() {
+  allMaterials.forEach(m=>selectedMaterials.add(m));
+  updateMaterialTrigger();
+  renderMaterialList(document.querySelector('#dd-material-panel .dd-search').value);
+  renderAll();
+}
+
+function clearMaterial() {
+  selectedMaterials.clear();
+  updateMaterialTrigger();
+  renderMaterialList(document.querySelector('#dd-material-panel .dd-search').value);
+  renderAll();
+}
+
+function filterMaterialItems(val) {
+  renderMaterialList(val);
+}
+
+function updateMaterialTrigger() {
+  const label = document.getElementById('dd-material-label');
+  const count = document.getElementById('dd-material-count');
+  const trigger = document.getElementById('dd-material-trigger');
+  if (selectedMaterials.size === 0) {
+    label.textContent = 'Semua material';
+    count.style.display = 'none';
+    trigger.classList.remove('has-sel');
+  } else {
+    label.textContent = selectedMaterials.size === 1 ? [...selectedMaterials][0] : 'Material';
+    count.textContent = selectedMaterials.size;
+    count.style.display = 'inline-block';
+    trigger.classList.add('has-sel');
+  }
+}
+
+function toggleMaterialDd() {
+  document.getElementById('dd-material-panel').classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('dd-material');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('dd-material-panel').classList.remove('open');
+  }
+});
+
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const isLight = document.body.classList.contains('light');
+  document.getElementById('themeBtn').textContent = isLight ? '🌙 Dark' : '☀️ Light';
+  // Update chart defaults
+  Chart.defaults.color = textColor();
+  Chart.defaults.borderColor = gridColor();
+  renderAll();
+  try { localStorage.setItem('op_theme', isLight?'light':'dark'); } catch(e){}
+}
+
+function renderAll() {
+  renderOverview();
+  renderSortation();
+  renderRemover();
+  renderProduction();
+  renderCacah();
+}
+
+// Init
+(function(){
+  try { if (localStorage.getItem('op_theme')==='light') { document.body.classList.add('light'); document.getElementById('themeBtn').textContent='🌙 Dark'; } } catch(e){}
+  buildMaterialList();
+  renderAll();
+})();
+
+// Re-render on resize so datalabel sizing/thresholds adapt across breakpoints
+let _resizeT;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeT);
+  _resizeT = setTimeout(renderAll, 220);
+});
+</script>
+</body>
+</html>
