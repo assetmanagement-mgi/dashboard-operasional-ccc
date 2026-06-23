@@ -357,37 +357,10 @@ tbody tr:last-child td{border-bottom:none}
   </div>
   <div class="header-right">
     <div class="filter-group">
-      <span class="filter-label">Periode</span>
-      <button class="fpill active" onclick="setMonth('all',this)">Semua</button>
-      <button class="fpill" onclick="setMonth('Jan',this)">Jan</button>
-      <button class="fpill" onclick="setMonth('Feb',this)">Feb</button>
-      <button class="fpill" onclick="setMonth('Mar',this)">Mar</button>
-      <button class="fpill" onclick="setMonth('Apr',this)">Apr</button>
-      <button class="fpill" onclick="setMonth('May',this)">Mei</button>
-      <button class="fpill" onclick="setMonth('Jun',this)">Jun</button>
-    </div>
-    <div class="filter-group">
       <span class="filter-label">Tanggal</span>
       <input type="date" id="dateFrom" onchange="onDateChange()">
       <span class="sep">–</span>
       <input type="date" id="dateTo" onchange="onDateChange()">
-    </div>
-    <div class="filter-group">
-      <span class="filter-label">Material</span>
-      <div class="dd-wrap" id="dd-material">
-        <div class="dd-trigger" id="dd-material-trigger" onclick="toggleMaterialDd()">
-          <span id="dd-material-label">Semua material</span>
-          <span class="dd-count" id="dd-material-count" style="display:none"></span>
-        </div>
-        <div class="dd-panel" id="dd-material-panel">
-          <div class="dd-search-wrap"><input class="dd-search" placeholder="Cari material…" oninput="filterMaterialItems(this.value)"></div>
-          <div class="dd-actions">
-            <button class="dd-act-btn" onclick="selectAllMaterial()">Pilih semua</button>
-            <button class="dd-act-btn" onclick="clearMaterial()">Hapus semua</button>
-          </div>
-          <div class="dd-list" id="dd-material-list"></div>
-        </div>
-      </div>
     </div>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
   </div>
@@ -419,10 +392,10 @@ tbody tr:last-child td{border-bottom:none}
 
   <div class="row r21">
     <div class="card">
-      <div class="card-head"><span class="card-title">📈 Volume Bulanan — Semua Aktivitas</span><span class="card-badge badge-green" id="ov-trend-badge">Tren</span></div>
+      <div class="card-head"><span class="card-title">📈 Volume — Semua Aktivitas</span><span class="card-badge badge-green" id="ov-trend-badge">Tren</span></div>
       <div class="legend" id="ov-trend-legend"></div>
       <div class="chart-wrap"><canvas id="ov-trend-chart" height="200"></canvas></div>
-      <div style="font-size:11px;opacity:0.55;margin-top:6px;text-align:center">┄┄ garis putus-putus = target minimum bulanan (Sortasi 4 ton · Remover 1 ton · Produksi 1 ton · Cacah 1 ton)</div>
+      <div style="font-size:11px;opacity:0.55;margin-top:6px;text-align:center">┄┄ garis putus-putus = target per hari kerja (Sortasi 4 ton/hari · Remover 1 ton/hari · Produksi 1 ton/hari · Cacah 1 ton/hari)</div>
     </div>
     <div class="card">
       <div class="card-head"><span class="card-title">🥧 Distribusi Aktivitas</span></div>
@@ -1131,24 +1104,74 @@ function renderOverview() {
   document.getElementById('ov-cacah-total').textContent = fmt(cacahTotal);
   document.getElementById('ov-cacah-days').textContent = `${cacahData.length} entri`;
 
-  // Trend chart — all 4 by month (grouped bars, each with its own monthly target)
+  // Trend chart — daily when a month is selected, monthly otherwise
   const MONTH_ORDER = ['Jan','Feb','Mar','Apr','May','Jun'];
-  const sortByMo  = aggByMonth(sortData, 0, 5);
-  const remByMo   = aggByMonth(remData, 0, 2);
-  const prodByMo  = aggByMonth(prodData, 0, 3);
-  const cacahByMo = aggByMonth(cacahData, 0, 2);
+  const DAILY_TARGETS = { Sortasi: 4000, Remover: 1000, Produksi: 1000, Cacah: 1000 };
 
-  // Monthly minimum targets (kg). 1 ton = 1000 kg.
-  const TARGETS = { Sortasi: 4000, Remover: 1000, Produksi: 1000, Cacah: 1000 };
+  // Count unique working days in each dataset for the current filter period
+  const remDays   = new Set(remData.map(r=>r[0])).size;
+  const cacahDays = new Set(cacahData.map(r=>r[0])).size;
+
+  // Dynamic targets = daily target × actual number of working days in the filtered data
+  const TARGETS = {
+    Sortasi:  DAILY_TARGETS.Sortasi  * (sortDays  || 1),
+    Remover:  DAILY_TARGETS.Remover  * (remDays   || 1),
+    Produksi: DAILY_TARGETS.Produksi * (prodDays  || 1),
+    Cacah:    DAILY_TARGETS.Cacah    * (cacahDays || 1),
+  };
+
+  // Decide whether to use daily or monthly axis
+  const isMonthFiltered = (activeMonth !== 'all') || (dateFrom && dateTo && dateFrom.getMonth() === dateTo.getMonth() && dateFrom.getFullYear() === dateTo.getFullYear());
+
+  let trendLabels, sortTrendData, remTrendData, prodTrendData, cacahTrendData, trendTarget;
+
+  if (isMonthFiltered) {
+    // Daily view: collect all unique dates across all datasets, sorted
+    const allDatesSet = new Set([
+      ...sortData.map(r=>r[0]),
+      ...remData.map(r=>r[0]),
+      ...prodData.map(r=>r[0]),
+      ...cacahData.map(r=>r[0]),
+    ]);
+    const allDates = [...allDatesSet].sort((a,b)=>parseDate(a)-parseDate(b));
+    // Build aggregation by date
+    function aggByDate(data, dateIdx, valIdx) {
+      const m = {};
+      data.forEach(r => { m[r[dateIdx]] = (m[r[dateIdx]]||0) + (r[valIdx]||0); });
+      return m;
+    }
+    const sortByDt  = aggByDate(sortData, 0, 5);
+    const remByDt   = aggByDate(remData, 0, 2);
+    const prodByDt  = aggByDate(prodData, 0, 3);
+    const cacahByDt = aggByDate(cacahData, 0, 2);
+    trendLabels      = allDates.map(d => { const p=parseDate(d); return `${p.getDate()} ${MONTHS[p.getMonth()]}`; });
+    sortTrendData    = allDates.map(d => sortByDt[d]||0);
+    remTrendData     = allDates.map(d => remByDt[d]||0);
+    prodTrendData    = allDates.map(d => prodByDt[d]||0);
+    cacahTrendData   = allDates.map(d => cacahByDt[d]||0);
+    trendTarget      = DAILY_TARGETS; // show daily target line per bar
+  } else {
+    // Monthly view
+    const sortByMo  = aggByMonth(sortData, 0, 5);
+    const remByMo   = aggByMonth(remData, 0, 2);
+    const prodByMo  = aggByMonth(prodData, 0, 3);
+    const cacahByMo = aggByMonth(cacahData, 0, 2);
+    trendLabels    = MONTH_ORDER;
+    sortTrendData  = MONTH_ORDER.map(m=>sortByMo[m]||0);
+    remTrendData   = MONTH_ORDER.map(m=>remByMo[m]||0);
+    prodTrendData  = MONTH_ORDER.map(m=>prodByMo[m]||0);
+    cacahTrendData = MONTH_ORDER.map(m=>cacahByMo[m]||0);
+    trendTarget    = DAILY_TARGETS; // still show per-bar daily targets on monthly view
+  }
 
   renderChart('ov-trend-chart', {
     type:'bar', data:{
-      labels:MONTH_ORDER,
+      labels:trendLabels,
       datasets:[
-        {label:'Sortasi',data:MONTH_ORDER.map(m=>sortByMo[m]||0),backgroundColor:'rgba(52,211,153,0.7)',borderRadius:4,target:TARGETS.Sortasi},
-        {label:'Remover',data:MONTH_ORDER.map(m=>remByMo[m]||0),backgroundColor:'rgba(251,113,133,0.7)',borderRadius:4,target:TARGETS.Remover},
-        {label:'Produksi',data:MONTH_ORDER.map(m=>prodByMo[m]||0),backgroundColor:'rgba(167,139,250,0.7)',borderRadius:4,target:TARGETS.Produksi},
-        {label:'Cacah',data:MONTH_ORDER.map(m=>cacahByMo[m]||0),backgroundColor:'rgba(249,115,22,0.7)',borderRadius:4,target:TARGETS.Cacah},
+        {label:'Sortasi', data:sortTrendData, backgroundColor:'rgba(52,211,153,0.7)',borderRadius:4,target:trendTarget.Sortasi},
+        {label:'Remover', data:remTrendData,  backgroundColor:'rgba(251,113,133,0.7)',borderRadius:4,target:trendTarget.Remover},
+        {label:'Produksi',data:prodTrendData, backgroundColor:'rgba(167,139,250,0.7)',borderRadius:4,target:trendTarget.Produksi},
+        {label:'Cacah',   data:cacahTrendData,backgroundColor:'rgba(249,115,22,0.7)', borderRadius:4,target:trendTarget.Cacah},
       ]
     },
     options:{
@@ -1162,7 +1185,7 @@ function renderOverview() {
             const val = ds.data[items[0].dataIndex] || 0;
             const diff = val - ds.target;
             const status = diff >= 0 ? `✓ +${fmt(diff)} kg dari target` : `✗ kurang ${fmt(Math.abs(diff))} kg dari target`;
-            return `Target: ${fmt(ds.target)} kg\n${status}`;
+            return `Target/hari: ${fmt(ds.target)} kg\n${status}`;
           }
         }}
       },
@@ -1180,17 +1203,17 @@ function renderOverview() {
   });
   document.getElementById('ov-donut-legend').innerHTML = ['Sortasi','Remover','Produksi','Cacah'].map((l,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${['rgba(52,211,153,0.85)','rgba(251,113,133,0.85)','rgba(167,139,250,0.85)','rgba(249,115,22,0.85)'][i]}"></div>${l}</div>`).join('');
 
-  // Top 5s
-  renderTargetSummary('ov-sort-target', 'Total Sortasi', sortTotal, TARGETS.Sortasi, '#34d399');
+  // Top 5s — target summary now uses dynamic target (daily × working days in filter)
+  renderTargetSummary('ov-sort-target', `Total Sortasi (${sortDays} hari × ${fmt(DAILY_TARGETS.Sortasi)} kg)`, sortTotal, TARGETS.Sortasi, '#34d399');
   const sortByItem = aggByKey(sortData.filter(r=>r[4]), 4, 5);
   renderProg('ov-sort-top', topN(sortByItem,5), ['#34d399','#22d3ee','#60a5fa','#a78bfa','#fb7185']);
-  renderTargetSummary('ov-rem-target', 'Total Remover', remTotal, TARGETS.Remover, '#fb7185');
+  renderTargetSummary('ov-rem-target', `Total Remover (${remDays} hari × ${fmt(DAILY_TARGETS.Remover)} kg)`, remTotal, TARGETS.Remover, '#fb7185');
   const remByLabel = aggByKey(remData, 1, 2);
   renderProg('ov-rem-top', topN(remByLabel,5), ['#fb7185','#fbbf24','#f97316','#e879f9','#fb7185']);
-  renderTargetSummary('ov-prod-target', 'Total Produksi', prodTotal, TARGETS.Produksi, '#a78bfa');
+  renderTargetSummary('ov-prod-target', `Total Produksi (${prodDays} hari × ${fmt(DAILY_TARGETS.Produksi)} kg)`, prodTotal, TARGETS.Produksi, '#a78bfa');
   const prodByType = aggByKey(prodData, 1, 3);
   renderProg('ov-prod-top', topN(prodByType,5), ['#a78bfa','#60a5fa','#22d3ee','#34d399','#fbbf24']);
-  renderTargetSummary('ov-cacah-target', 'Total Cacah', cacahTotal, TARGETS.Cacah, '#f97316');
+  renderTargetSummary('ov-cacah-target', `Total Cacah (${cacahDays} hari × ${fmt(DAILY_TARGETS.Cacah)} kg)`, cacahTotal, TARGETS.Cacah, '#f97316');
   const cacahByType = aggByKey(cacahData, 1, 2);
   const cacahTop5 = topN(cacahByType,5);
   if (cacahTop5.length === 0) {
