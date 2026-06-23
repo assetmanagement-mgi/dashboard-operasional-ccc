@@ -81,15 +81,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 }
 .theme-btn:hover{border-color:var(--green);color:var(--green)}
 
-/* ─ DATE INPUTS ─ */
-.filter-group input[type="date"]{
-  background:var(--bg);border:1px solid var(--border2);border-radius:18px;
-  color:var(--text);font-size:12px;font-family:inherit;padding:5px 10px;
-  outline:none;cursor:pointer;color-scheme:dark;transition:all .18s;
-}
-body.light .filter-group input[type="date"]{color-scheme:light}
-.filter-group input[type="date"]:focus{border-color:var(--green)}
-.filter-group .sep{color:var(--text3);font-size:11px;padding:0 1px}
+/* ─ DATE PICKER ─ */
+.dp-preset{background:var(--bg2);border:1px solid var(--border);border-radius:20px;color:var(--text2);font-family:inherit;font-size:12px;font-weight:500;padding:5px 13px;cursor:pointer;transition:all .15s;flex:1}
+.dp-preset:hover{color:var(--text);border-color:var(--border2)}
+.dp-preset.active{background:var(--green);color:#0b1221;border-color:var(--green);font-weight:700}
+.dp-day-hdr{font-size:9px;font-weight:700;color:var(--text3);padding:4px 2px;text-align:center}
+.dp-day{width:100%;aspect-ratio:1;border:none;background:none;color:var(--text2);font-family:inherit;font-size:11.5px;border-radius:50%;cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;position:relative}
+.dp-day:hover:not(:disabled){background:var(--bg2);color:var(--text)}
+.dp-day.today::after{content:'·';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:14px;color:var(--green);line-height:0}
+.dp-day.in-range{background:var(--green2);color:var(--green);border-radius:0}
+.dp-day.range-start,.dp-day.range-end{background:var(--green)!important;color:#0b1221!important;border-radius:50%!important;font-weight:700}
+.dp-day.range-start{border-radius:50% 0 0 50%!important}
+.dp-day.range-end{border-radius:0 50% 50% 0!important}
+.dp-day.range-start.range-end{border-radius:50%!important}
+.dp-day:disabled{color:var(--text3);cursor:default;opacity:.4}
+.dp-day.other-month{opacity:.3}
+body.light #dp-custom-from,body.light #dp-custom-to{color-scheme:light}
 
 /* ─ MATERIAL DROPDOWN ─ */
 .dd-wrap{position:relative}
@@ -356,11 +363,48 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
   <div class="header-right">
-    <div class="filter-group">
-      <span class="filter-label">Tanggal</span>
-      <input type="date" id="dateFrom" onchange="onDateChange()">
-      <span class="sep">–</span>
-      <input type="date" id="dateTo" onchange="onDateChange()">
+    <div style="position:relative" id="dp-wrap">
+      <button class="theme-btn" id="dp-trigger" onclick="toggleDatePicker()" style="gap:8px;min-width:180px;justify-content:space-between">
+        <span>📅</span>
+        <span id="dp-label" style="flex:1;text-align:left">Semua tanggal</span>
+        <span style="opacity:.5;font-size:10px">▼</span>
+      </button>
+      <div id="dp-panel" onclick="event.stopPropagation()" style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--card);border:1px solid var(--border2);border-radius:14px;box-shadow:var(--shadow);z-index:300;width:320px;padding:16px;font-family:inherit">
+        <!-- Preset tabs -->
+        <div style="display:flex;gap:6px;margin-bottom:14px">
+          <button class="dp-preset active" data-preset="all" onclick="dpPreset('all',this)">Semua</button>
+          <button class="dp-preset" data-preset="today" onclick="dpPreset('today',this)">Hari Ini</button>
+          <button class="dp-preset" data-preset="range" onclick="dpPreset('range',this)">Periode</button>
+        </div>
+        <!-- Selected range display -->
+        <div id="dp-range-display" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <div style="flex:1">
+            <div style="font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">TANGGAL MULAI</div>
+            <div id="dp-from-lbl" style="background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--text);cursor:pointer" onclick="dpFocusFrom()">—</div>
+          </div>
+          <div style="color:var(--text3);margin-top:18px">→</div>
+          <div style="flex:1">
+            <div style="font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">TANGGAL AKHIR</div>
+            <div id="dp-to-lbl" style="background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--text);cursor:pointer" onclick="dpFocusTo()">—</div>
+          </div>
+        </div>
+        <!-- Calendar -->
+        <div id="dp-cal-wrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <button onclick="dpNavMonth(-1)" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:2px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">◀</button>
+            <span id="dp-month-label" style="font-size:13px;font-weight:700;color:var(--text)"></span>
+            <button onclick="dpNavMonth(1)" style="background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:2px 8px;border-radius:6px" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='none'">▶</button>
+          </div>
+          <div id="dp-cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center"></div>
+        </div>
+        <!-- Info text -->
+        <div id="dp-hint" style="font-size:10.5px;color:var(--text3);text-align:center;margin-top:10px">Rentang terpilih · klik kotak di atas untuk mengubah</div>
+        <!-- Footer -->
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+          <button onclick="dpClear()" style="background:none;border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-family:inherit;font-size:12px;font-weight:600;padding:7px 18px;cursor:pointer" onmouseover="this.style.borderColor='var(--coral)';this.style.color='var(--coral)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">Hapus</button>
+          <button onclick="dpApply()" style="background:var(--green);border:none;border-radius:8px;color:#0b1221;font-family:inherit;font-size:12px;font-weight:700;padding:7px 22px;cursor:pointer">Terapkan</button>
+        </div>
+      </div>
     </div>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
   </div>
@@ -1224,22 +1268,175 @@ function renderOverview() {
 }
 
 // ═══════════════════════════════════════════════
-//  CONTROLS
+//  DATE PICKER
 // ═══════════════════════════════════════════════
-function setMonth(m, btn) {
-  activeMonth = m;
-  document.querySelectorAll('.fpill').forEach(b=>b.classList.remove('active'));
+let dpMode = 'all'; // all | today | range | custom
+let dpCalYear, dpCalMonth;
+let dpSelFrom = null, dpSelTo = null;
+let dpPickingFrom = false, dpPickingTo = false;
+
+const DP_MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const DP_DAYS_HDR = ['MIN','SEN','SEL','RAB','KAM','JUM','SAB'];
+
+function toggleDatePicker() {
+  const panel = document.getElementById('dp-panel');
+  if (panel.style.display === 'none') {
+    const now = new Date();
+    dpCalYear = now.getFullYear();
+    dpCalMonth = now.getMonth();
+    dpRenderCal();
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('dp-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('dp-panel').style.display = 'none';
+  }
+});
+
+function dpPreset(mode, btn) {
+  dpMode = mode;
+  document.querySelectorAll('.dp-preset').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  const cal = document.getElementById('dp-cal-wrap');
+  const hint = document.getElementById('dp-hint');
+  const rangeDisplay = document.getElementById('dp-range-display');
+  if (mode === 'all') {
+    dpSelFrom = null; dpSelTo = null;
+    cal.style.display = 'none';
+    rangeDisplay.style.display = 'none';
+    hint.textContent = 'Menampilkan semua data';
+  } else if (mode === 'today') {
+    const t = new Date(); t.setHours(0,0,0,0);
+    dpSelFrom = new Date(t); dpSelTo = new Date(t); dpSelTo.setHours(23,59,59,0);
+    cal.style.display = 'none';
+    rangeDisplay.style.display = 'none';
+    hint.textContent = 'Data hari ini dipilih';
+    dpUpdateLabels();
+  } else if (mode === 'range') {
+    cal.style.display = 'block';
+    rangeDisplay.style.display = 'flex';
+    hint.textContent = 'Klik tanggal mulai, lalu tanggal akhir';
+    dpPickingFrom = true; dpPickingTo = false;
+    dpRenderCal();
+  }
+}
+
+function dpNavMonth(dir) {
+  dpCalMonth += dir;
+  if (dpCalMonth > 11) { dpCalMonth = 0; dpCalYear++; }
+  if (dpCalMonth < 0) { dpCalMonth = 11; dpCalYear--; }
+  dpRenderCal();
+}
+
+function dpRenderCal() {
+  document.getElementById('dp-month-label').textContent = `${DP_MONTHS_ID[dpCalMonth]} ${dpCalYear}`;
+  const grid = document.getElementById('dp-cal-grid');
+  const today = new Date(); today.setHours(0,0,0,0);
+  // Header row
+  let html = DP_DAYS_HDR.map(d=>`<div class="dp-day-hdr" style="color:${d==='MIN'?'var(--coral)':'var(--text3)'}">${d}</div>`).join('');
+  const first = new Date(dpCalYear, dpCalMonth, 1).getDay();
+  const daysInMonth = new Date(dpCalYear, dpCalMonth+1, 0).getDate();
+  const prevDays = new Date(dpCalYear, dpCalMonth, 0).getDate();
+  // Prev month filler
+  for (let i=0; i<first; i++) {
+    const d = prevDays - first + 1 + i;
+    html += `<div class="dp-day other-month" disabled style="pointer-events:none">${d}</div>`;
+  }
+  // Current month days
+  for (let d=1; d<=daysInMonth; d++) {
+    const dt = new Date(dpCalYear, dpCalMonth, d);
+    const isToday = dt.getTime() === today.getTime();
+    const from = dpSelFrom ? new Date(dpSelFrom.getFullYear(), dpSelFrom.getMonth(), dpSelFrom.getDate()) : null;
+    const to = dpSelTo ? new Date(dpSelTo.getFullYear(), dpSelTo.getMonth(), dpSelTo.getDate()) : null;
+    let cls = 'dp-day';
+    if (isToday) cls += ' today';
+    if (from && dt.getTime() === from.getTime()) cls += ' range-start';
+    if (to && dt.getTime() === to.getTime()) cls += ' range-end';
+    if (from && to && dt > from && dt < to) cls += ' in-range';
+    html += `<button class="${cls}" onclick="dpClickDay(${dpCalYear},${dpCalMonth},${d})">${d}</button>`;
+  }
+  // Next month filler
+  const total = first + daysInMonth;
+  const remainder = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let i=1; i<=remainder; i++) {
+    html += `<div class="dp-day other-month" style="pointer-events:none">${i}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function dpClickDay(y, m, d) {
+  if (dpPickingFrom || (!dpSelFrom && !dpSelTo)) {
+    dpSelFrom = new Date(y, m, d, 0, 0, 0);
+    dpSelTo = null;
+    dpPickingFrom = false; dpPickingTo = true;
+    document.getElementById('dp-hint').textContent = 'Sekarang pilih tanggal akhir';
+  } else {
+    const clicked = new Date(y, m, d, 23, 59, 59);
+    if (dpSelFrom && clicked < dpSelFrom) {
+      dpSelTo = new Date(dpSelFrom.getFullYear(), dpSelFrom.getMonth(), dpSelFrom.getDate(), 23, 59, 59);
+      dpSelFrom = new Date(y, m, d, 0, 0, 0);
+    } else {
+      dpSelTo = clicked;
+    }
+    dpPickingTo = false;
+    document.getElementById('dp-hint').textContent = 'Rentang terpilih · klik kotak di atas untuk mengubah';
+  }
+  dpUpdateLabels();
+  dpRenderCal();
+}
+
+function dpFocusFrom() { dpPickingFrom = true; dpPickingTo = false; document.getElementById('dp-hint').textContent = 'Pilih tanggal mulai'; }
+function dpFocusTo()   { dpPickingFrom = false; dpPickingTo = true; document.getElementById('dp-hint').textContent = 'Pilih tanggal akhir'; }
+
+function dpUpdateLabels() {
+  const fmt2 = d => { if (!d) return '—'; const days=['Min','Sen','Sel','Rab','Kam','Jum','Sab']; return `${days[d.getDay()]}, ${d.getDate()} ${DP_MONTHS_ID[d.getMonth()].slice(0,3)} ${d.getFullYear()}`; };
+  document.getElementById('dp-from-lbl').textContent = dpSelFrom ? fmt2(dpSelFrom) : '—';
+  document.getElementById('dp-to-lbl').textContent = dpSelTo ? fmt2(dpSelTo) : '—';
+  // Update trigger label
+  const lbl = document.getElementById('dp-label');
+  if (!dpSelFrom && !dpSelTo) { lbl.textContent = 'Semua tanggal'; return; }
+  if (dpSelFrom && dpSelTo) {
+    const same = dpSelFrom.toDateString() === dpSelTo.toDateString();
+    lbl.textContent = same ? fmt2(dpSelFrom) : `${dpSelFrom.getDate()} ${DP_MONTHS_ID[dpSelFrom.getMonth()].slice(0,3)} – ${dpSelTo.getDate()} ${DP_MONTHS_ID[dpSelTo.getMonth()].slice(0,3)} ${dpSelTo.getFullYear()}`;
+  } else if (dpSelFrom) {
+    lbl.textContent = fmt2(dpSelFrom);
+  }
+}
+
+function dpClear() {
+  dpSelFrom = null; dpSelTo = null;
+  dateFrom = null; dateTo = null;
+  dpMode = 'all';
+  document.querySelectorAll('.dp-preset').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.dp-preset[data-preset="all"]').classList.add('active');
+  document.getElementById('dp-range-display').style.display = 'none';
+  document.getElementById('dp-cal-wrap').style.display = 'none';
+  document.getElementById('dp-hint').textContent = 'Menampilkan semua data';
+  document.getElementById('dp-label').textContent = 'Semua tanggal';
+  document.getElementById('dp-panel').style.display = 'none';
   renderAll();
 }
 
-function onDateChange() {
-  const from = document.getElementById('dateFrom').value;
-  const to = document.getElementById('dateTo').value;
-  dateFrom = from ? new Date(from+'T00:00:00') : null;
-  dateTo = to ? new Date(to+'T23:59:59') : null;
+function dpApply() {
+  dateFrom = dpSelFrom || null;
+  dateTo = dpSelTo || null;
+  dpUpdateLabels();
+  document.getElementById('dp-panel').style.display = 'none';
   renderAll();
 }
+
+// Keep activeMonth logic working (no pills now, always 'all')
+function setMonth(m, btn) {
+  activeMonth = m;
+  renderAll();
+}
+
+function onDateChange() { /* legacy no-op, replaced by dpApply */ }
 
 function buildMaterialList() {
   const set = new Set();
